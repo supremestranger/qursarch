@@ -2,8 +2,8 @@ FROM golang:latest as builder
 WORKDIR /src
 ADD . /src/
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o build .
+RUN CGO_ENABLED=0 go build -ldflags=all="-w -s" -o build .
 
-FROM scratch as prod
+FROM scratch as dev
 COPY --from=builder /src/build /
 CMD ["./build"]
