@@ -11,11 +11,17 @@ func Log() {
 }
 
 func onGet(rw http.ResponseWriter, request *http.Request) {
-	rw.Write([]byte("get"))
+	rw.Write([]byte("gwafwef"))
+}
+
+func onUserGet(rw http.ResponseWriter, request *http.Request) {
+	rw.Write([]byte("user id: " + request.PathValue("id")))
 }
 
 func InitRouting() {
 	RegisterOnGet("/get", onGet)
+
+	RegisterOnGet("/users/{id}", onUserGet)
 }
 
 func RegisterOnGet(url string, handler http.HandlerFunc) {
