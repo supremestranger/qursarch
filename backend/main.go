@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Startup!!!а")
+	fmt.Println("Startup!!!")
 	server.InitRouting()
 	err := http.ListenAndServe(":3001", nil)
 	if err != nil {

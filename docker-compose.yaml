@@ -6,9 +6,7 @@ services:
   nginx:
     image: nginx:latest
     volumes:
-      - type: bind
-        source: ./nginx/nginx.conf
-        target: /etc/nginx/conf.d/default.conf
+    - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "3000:3000"
     depends_on:
