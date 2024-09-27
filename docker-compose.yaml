@@ -1,5 +1,37 @@
-services:
+services: 
+  database:
+    image: postgres:15.8
+    volumes:
+      - dbdata:/var/lib/postgres/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    environment:
+      POSTGRES_DB: "QDB"
+      POSTGRES_USER: "QDBSU"
+      POSTGRES_PASSWORD: "TheSacredKailash"
+    ports: 
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U QDBSU -d QDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
   backend:
     build: backend
     ports:
       - "3000:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: QDB
+      DB_USER: QDBSU
+      DB_PASSWORD: TheSacredKailash
+  
+volumes:
+  dbdata:
+    driver: local
