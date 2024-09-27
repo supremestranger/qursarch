@@ -1,9 +1,8 @@
-FROM golang:latest as builder
+FROM golang:latest
+
 WORKDIR /src
-ADD . /src/
+ADD . /src
 
-RUN CGO_ENABLED=0 go build -ldflags=all="-w -s" -o build .
+RUN go install github.com/air-verse/air@latest
 
-FROM scratch as dev
-COPY --from=builder /src/build /
-CMD ["./build"]
+CMD ["air", "-c", ".air.toml"]

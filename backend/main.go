@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-	fmt.Println("hello world")
+	fmt.Println("Startup!!!")
 	server.InitRouting()
-	err := http.ListenAndServe(":3000", nil)
+	err := http.ListenAndServe(":3001", nil)
 	if err != nil {
 		log.Println(err)
 	}

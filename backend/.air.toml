@@ -1,0 +1,7 @@
+[build]
+
+cmd = "go build -ldflags=all=\"-w -s\" -o build ."
+bin = "./build"
+# required on windows, fsnotify is not reliable on windows
+poll = true
+poll_interval = 500
