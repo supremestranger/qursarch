@@ -1,14 +1,14 @@
 package model
 
 import (
-	"backend/survey"
+	"backend/surveys"
 	"backend/utils"
 	"encoding/json"
 	"net/http"
 )
 
 type NewSurveyRequest struct {
-	Questions []survey.Question `json:"questions"`
+	Questions []surveys.Question `json:"questions"`
 }
 
 func RegisterSurveyModels() {
@@ -18,7 +18,7 @@ func RegisterSurveyModels() {
 
 func onSurveysGet(rw http.ResponseWriter, req *http.Request) {
 	id := req.PathValue("id")
-	survey.GetSurveyById(id)
+	surveys.GetSurveyById(id)
 }
 
 func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
@@ -43,14 +43,14 @@ func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
 	rw.Write([]byte("Good request"))
 }
 
-func TypeIsCorrect(q survey.Question) bool {
-	if q.Type != survey.S_TEXT_ANSWER_TYPE && q.Type != survey.L_TEXT_ANSWER_TYPE && q.Type != survey.SINGLE_ANSWER_TYPE && q.Type != survey.MULTIPLE_ANSWERS_TYPE {
+func TypeIsCorrect(q surveys.Question) bool {
+	if q.Type != surveys.S_TEXT_ANSWER_TYPE && q.Type != surveys.L_TEXT_ANSWER_TYPE && q.Type != surveys.SINGLE_ANSWER_TYPE && q.Type != surveys.MULTIPLE_ANSWERS_TYPE {
 		return false
 	}
 
 	noAnswers := q.Answers == nil || len(q.Answers) == 0
 
-	if (q.Type == survey.SINGLE_ANSWER_TYPE || q.Title == survey.MULTIPLE_ANSWERS_TYPE) && noAnswers {
+	if (q.Type == surveys.SINGLE_ANSWER_TYPE || q.Title == surveys.MULTIPLE_ANSWERS_TYPE) && noAnswers {
 		return false
 	}
 
