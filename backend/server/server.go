@@ -10,5 +10,6 @@ func Log() {
 }
 
 func InitRouting() {
+	model.RegisterAccountModels()
 	model.RegisterSurveyModels()
 }
