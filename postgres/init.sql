@@ -6,5 +6,8 @@ CREATE TABLE Accounts (
 
 CREATE TABLE Surveys (
     ID SERIAL NOT NULL PRIMARY KEY,
-    Questions VARCHAR
-)
+    Questions VARCHAR,
+    Creator SERIAL references Accounts(ID)
+);
+
+INSERT INTO Accounts (Username, Password) values ('Admin', '123123');
