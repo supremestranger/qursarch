@@ -45,9 +45,10 @@ func onSignUp(rw http.ResponseWriter, req *http.Request) {
 
 	if len(signUpReq.Password) == 0 {
 		http.Error(rw, "Too short password", http.StatusBadRequest)
-	} // todo проверить что ник не занят
+	}
 
-	accounts.CreateAccount(accounts.AccountDesc{Login: signUpReq.Login, Password: signUpReq.Password})
-
-	// todo записать в бд новый аккаунт
+	err = accounts.CreateAccount(accounts.AccountDesc{Login: signUpReq.Login, Password: signUpReq.Password})
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
 }
