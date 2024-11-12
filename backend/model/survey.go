@@ -7,13 +7,15 @@ import (
 	"net/http"
 )
 
+const SURVEY_ROOT = "/surveys"
+
 type NewSurveyRequest struct {
 	Questions []surveys.Question `json:"questions"`
 }
 
 func RegisterSurveyModels() {
-	utils.RegisterOnGet("/surveys/{id}", onSurveysGet)
-	utils.RegisterOnPost("/surveys", onSurveysPost)
+	utils.RegisterOnGet(SURVEY_ROOT+"/{id}", onSurveysGet)
+	utils.RegisterOnPost(SURVEY_ROOT, onSurveysPost)
 }
 
 func onSurveysGet(rw http.ResponseWriter, req *http.Request) {
@@ -22,12 +24,19 @@ func onSurveysGet(rw http.ResponseWriter, req *http.Request) {
 }
 
 func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
+	ok, user := CheckAuth(rw, req)
+	if !ok {
+		http.Error(rw, "вы не авторизованы", http.StatusBadRequest)
+		return
+	}
+
 	var newSurveyReq NewSurveyRequest
 	err := json.NewDecoder(req.Body).Decode(&newSurveyReq)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	if len(newSurveyReq.Questions) == 0 || newSurveyReq.Questions == nil {
 		http.Error(rw, "no questions", http.StatusBadRequest)
 		return
@@ -40,7 +49,14 @@ func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	rw.Write([]byte("Good request"))
+	json, err := json.Marshal(&newSurveyReq.Questions)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+	err = surveys.CreateSurvey(string(json), user)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
 }
 
 func TypeIsCorrect(q surveys.Question) bool {

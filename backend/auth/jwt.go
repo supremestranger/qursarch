@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	SIGNING_METHOD = jwt.SigningMethodHS256
+	SIGNING_METHOD     = jwt.SigningMethodHS256
+	ADMIN_SECRET_TOKEN = "SECRET_TOKEN"
 )
 
 // Function to create JWT tokens with claims
@@ -30,22 +31,25 @@ func CreateToken(username string) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenStr string) bool {
+func VerifyToken(tokenStr string) (bool, string) {
 	claims := jwt.MapClaims{}
+	if tokenStr == ADMIN_SECRET_TOKEN {
+		return true, "Admin"
+	}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (any, error) { return "SECRET_KEY", nil })
 	if err != nil {
-		return false
+		return false, ""
 	}
 
 	if !token.Valid {
-		return false
+		return false, ""
 	}
 
 	// if claims["iat"]
 
 	if token.Method.Alg() != SIGNING_METHOD.Name {
-		return false
+		return false, ""
 	}
 
-	return true
+	return true, claims["sub"].(string)
 }

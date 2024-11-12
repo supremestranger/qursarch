@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// todo брать из переменных окружения
 const (
 	host     = "database"
 	port     = 5432

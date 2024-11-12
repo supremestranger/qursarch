@@ -2,4 +2,9 @@ CREATE TABLE Accounts (
     ID SERIAL NOT NULL PRIMARY KEY,
     Username VARCHAR,
     Password VARCHAR
+);
+
+CREATE TABLE Surveys (
+    ID SERIAL NOT NULL PRIMARY KEY,
+    Questions VARCHAR
 )
