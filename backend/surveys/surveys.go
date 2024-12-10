@@ -26,13 +26,13 @@ func GetSurveyById(rawId string) *Survey {
 	return &Survey{}
 }
 
-func CreateSurvey(questionsJson string, user string) error {
+func CreateSurvey(questionsJson string, title string, user string) error {
 	row := db.DB.QueryRow("SELECT Accounts.ID FROM ACCOUNTS Where Accounts.Username = $1", user)
 
 	var id int
 	row.Scan(&id)
 
-	res, err := db.DB.Exec("INSERT INTO Surveys (Questions, Creator) values ($1, $2)", questionsJson, id)
+	res, err := db.DB.Exec("INSERT INTO Surveys (Questions, Creator) values ($1, $2, $3)", questionsJson, title, id)
 	if err != nil {
 		return err
 	}

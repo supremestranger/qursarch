@@ -11,7 +11,7 @@ func main() {
 	fmt.Println("Startup!!!")
 	server.InitRouting()
 	server.InitDb()
-	err := http.ListenAndServe(":3001", nil)
+	err := http.ListenAndServe(":3002", nil)
 	if err != nil {
 		log.Println(err)
 	}

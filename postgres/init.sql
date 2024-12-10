@@ -6,6 +6,7 @@ CREATE TABLE Accounts (
 
 CREATE TABLE Surveys (
     ID SERIAL NOT NULL PRIMARY KEY,
+    Title VARCHAR,
     Questions VARCHAR,
     Creator SERIAL references Accounts(ID)
 );

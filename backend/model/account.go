@@ -21,6 +21,7 @@ func RegisterAccountModels() {
 }
 
 func onSignIn(rw http.ResponseWriter, req *http.Request) {
+	utils.EnableCors(rw)
 	// todo проверить что пароль правильный
 
 	username := ""
@@ -37,6 +38,7 @@ func onSignIn(rw http.ResponseWriter, req *http.Request) {
 }
 
 func onSignUp(rw http.ResponseWriter, req *http.Request) {
+	utils.EnableCors(rw)
 	var signUpReq SignUpRequest
 	err := json.NewDecoder(req.Body).Decode(&signUpReq)
 	if err != nil {
@@ -57,4 +59,15 @@ func onSignUp(rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
+
+	token, err := auth.CreateToken(signUpReq.Login)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	cookie := http.Cookie{
+		Name:  "token",
+		Value: token,
+	}
+	http.SetCookie(rw, &cookie)
 }

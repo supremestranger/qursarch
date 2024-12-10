@@ -10,6 +10,7 @@ import (
 const SURVEY_ROOT = "/surveys"
 
 type NewSurveyRequest struct {
+	Title     string             `json:"title"`
 	Questions []surveys.Question `json:"questions"`
 }
 
@@ -19,11 +20,13 @@ func RegisterSurveyModels() {
 }
 
 func onSurveysGet(rw http.ResponseWriter, req *http.Request) {
+	utils.EnableCors(rw)
 	id := req.PathValue("id")
 	surveys.GetSurveyById(id)
 }
 
 func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
+	utils.EnableCors(rw)
 	ok, user := CheckAuth(rw, req)
 	if !ok {
 		http.Error(rw, "вы не авторизованы", http.StatusBadRequest)
@@ -53,7 +56,7 @@ func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
-	err = surveys.CreateSurvey(string(json), user)
+	err = surveys.CreateSurvey(string(json), newSurveyReq.Title, user)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 	}
