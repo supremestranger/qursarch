@@ -11,12 +11,12 @@ function AuthPage() {
     try {
       const response = await fetch(`http://localhost:3001/v1/accounts`, {
         method: `${isLogin ? 'GET' : 'POST'}`,
-        body: JSON.stringify({ login, password }),
+        body: isLogin ? null : JSON.stringify({ "login": login, "password": password }),
       });
 
       if (response.ok) {
-        console.log(response.json())
-        const { token } = await response.json();
+        const { token } = response.headers.getSetCookie();
+        console.log()
         localStorage.setItem('token', token);
         navigate('/');
       } else {

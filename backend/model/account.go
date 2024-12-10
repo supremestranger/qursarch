@@ -5,6 +5,7 @@ import (
 	"backend/auth"
 	"backend/utils"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -42,26 +43,32 @@ func onSignUp(rw http.ResponseWriter, req *http.Request) {
 	var signUpReq SignUpRequest
 	err := json.NewDecoder(req.Body).Decode(&signUpReq)
 	if err != nil {
+		log.Println(err)
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 	if len(signUpReq.Login) == 0 {
+		log.Println(err)
 		http.Error(rw, "Too short username", http.StatusBadRequest)
 		return
 	}
 
 	if len(signUpReq.Password) == 0 {
+		log.Println(err)
 		http.Error(rw, "Too short password", http.StatusBadRequest)
 		return
 	}
 
 	err = accounts.CreateAccount(accounts.AccountDesc{Login: signUpReq.Login, Password: signUpReq.Password})
 	if err != nil {
+		log.Println(err)
 		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	token, err := auth.CreateToken(signUpReq.Login)
 	if err != nil {
+		log.Println(err)
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -70,4 +77,5 @@ func onSignUp(rw http.ResponseWriter, req *http.Request) {
 		Value: token,
 	}
 	http.SetCookie(rw, &cookie)
+	rw.Header().Set("Content-Type", "text/html; charset=utf-8")
 }

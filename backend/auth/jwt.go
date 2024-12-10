@@ -24,7 +24,7 @@ func CreateToken(username string) (string, error) {
 	// Print information about the created token
 	fmt.Printf("Token claims added: %+v\n", claims)
 
-	tokenString, err := claims.SignedString("SECRET_KEY")
+	tokenString, err := claims.SignedString([]byte("SECRET_KEY"))
 	if err != nil {
 		return "", err
 	}

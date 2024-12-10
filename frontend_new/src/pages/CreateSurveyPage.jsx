@@ -2,14 +2,20 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import SurveyEditor from '../components/SurveyEditor';
 
+function getAuthToken() {
+  const cookies = document.cookie.split(';');
+  const tokenCookie = cookies.find((cookie) => cookie.trim().startsWith('token='));
+  return tokenCookie ? tokenCookie.split('=')[1] : null;
+}
+
 function CreateSurveyPage() {
     const [title, setTitle] = useState('');
   const [error, setError] = useState('');
 
-  const token = localStorage.getItem('token');
-    if (!token) {
-        return <Navigate to="/auth" />;
-    }
+  const token = getAuthToken();
+  if (!token) {
+    return <Navigate to="/auth" />;
+  }
 
   const submitSurvey = async (surveyData) => {
     
