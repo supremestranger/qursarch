@@ -63,7 +63,7 @@ function SurveyEditor() {
   return (
     <div className="bg-white p-5 rounded shadow">
       {questions.map((question) => (
-        <div key={question.id} className="mb-4 border p-3 rounded">
+        <div key={question.id} className="mb-4 border border-solid border-b p-3 rounded">
           <Question
             question={question}
             onUpdate={updateQuestion}
@@ -78,7 +78,7 @@ function SurveyEditor() {
         Добавить вопрос
       </button>
       <button
-        className="bg-green-500 text-white px-4 py-2 rounded"
+        className="bg-green-500 text-white px-8 absolute right-10 py-2 rounded"
         onClick={submitSurvey}
       >
         Создать опрос

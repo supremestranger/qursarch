@@ -9,8 +9,8 @@ const (
 	API_VERSION = "/v1"
 )
 
-func EnableCors(w http.ResponseWriter) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+func EnableCors(w http.ResponseWriter, val string) {
+	w.Header().Add("Access-Control-Allow-Origin", val)
 	w.Header().Add("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 }

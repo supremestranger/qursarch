@@ -33,7 +33,7 @@ function Question({ question, onUpdate, onDelete }) {
       <select
         value={question.type}
         onChange={(e) => updateField('type', e.target.value)}
-        className="border p-2 rounded w-full mb-2"
+        className="border border-solid border-black p-2 rounded w-full mb-2"
       >
         <option value="text">Текстовый ответ</option>
         <option value="radio">Один ответ</option>
@@ -43,7 +43,7 @@ function Question({ question, onUpdate, onDelete }) {
       {question.type !== 'text' && (
         <div>
           {question.options.map((opt, index) => (
-            <div key={index} className="flex items-center mb-2">
+            <div key={index} className="flex items-center p-4 mb-2">
               <input
                 type="text"
                 value={opt}

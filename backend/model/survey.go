@@ -20,13 +20,13 @@ func RegisterSurveyModels() {
 }
 
 func onSurveysGet(rw http.ResponseWriter, req *http.Request) {
-	utils.EnableCors(rw)
+	utils.EnableCors(rw, "*")
 	id := req.PathValue("id")
 	surveys.GetSurveyById(id)
 }
 
 func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
-	utils.EnableCors(rw)
+	utils.EnableCors(rw, "*")
 	ok, user := CheckAuth(rw, req)
 	if !ok {
 		http.Error(rw, "вы не авторизованы", http.StatusBadRequest)
