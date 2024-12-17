@@ -4,6 +4,7 @@ import (
 	"backend/surveys"
 	"backend/utils"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -15,18 +16,47 @@ type NewSurveyRequest struct {
 }
 
 func RegisterSurveyModels() {
-	utils.RegisterOnGet(SURVEY_ROOT+"/{id}", onSurveysGet)
+	utils.RegisterOnGet(SURVEY_ROOT, onSurveysGet)
+	utils.RegisterOnGet(SURVEY_ROOT+"/{id}", onSurveyGet)
 	utils.RegisterOnPost(SURVEY_ROOT, onSurveysPost)
 }
 
 func onSurveysGet(rw http.ResponseWriter, req *http.Request) {
 	utils.EnableCors(rw, "*")
+	surveys, err := surveys.GetSurveys()
+	if err != nil {
+		log.Println(err)
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	res, err := json.Marshal(surveys)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
+
+	rw.Write(res)
+}
+
+func onSurveyGet(rw http.ResponseWriter, req *http.Request) {
+	utils.EnableCors(rw, "*")
 	id := req.PathValue("id")
-	surveys.GetSurveyById(id)
+	survey, err := surveys.GetSurveyById(id)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	surveyJson, err := json.Marshal(survey)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	rw.Write(surveyJson)
 }
 
 func onSurveysPost(rw http.ResponseWriter, req *http.Request) {
-	utils.EnableCors(rw, "*")
+	log.Println("hello 123123")
+	utils.EnableCors(rw, "http://localhost:3000")
+	rw.Header().Add("Access-Control-Allow-Credentials", "true")
 	ok, user := CheckAuth(rw, req)
 	if !ok {
 		http.Error(rw, "вы не авторизованы", http.StatusBadRequest)

@@ -19,11 +19,42 @@ type Question struct {
 }
 
 type Survey struct {
-	Questions []Question
+	Id        int
+	Title     string
+	CreatorId int
+	Questions string
 }
 
-func GetSurveyById(rawId string) *Survey {
-	return &Survey{}
+func GetSurveyById(rawId string) (*Survey, error) {
+	var survey Survey
+	rows, err := db.DB.Query("SELECT * FROM SURVEYS WHERE SURVEYS.ID = $1", rawId)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		if err := rows.Scan(&survey.Id, &survey.Title, &survey.Questions, &survey.CreatorId); err != nil {
+			return nil, err
+		}
+		break
+	}
+	return &survey, nil
+}
+
+func GetSurveys() ([]Survey, error) {
+	rows, err := db.DB.Query("SELECT ID, Title, Questions, Creator FROM Surveys")
+	if err != nil {
+		return nil, err
+	}
+	var surveys []Survey
+	for rows.Next() {
+		var survey Survey
+		if err := rows.Scan(&survey.Id, &survey.Title, &survey.Questions, &survey.CreatorId); err != nil {
+			return nil, err
+		}
+		surveys = append(surveys, survey)
+	}
+
+	return surveys, err
 }
 
 func CreateSurvey(questionsJson string, title string, user string) error {
@@ -32,7 +63,7 @@ func CreateSurvey(questionsJson string, title string, user string) error {
 	var id int
 	row.Scan(&id)
 
-	res, err := db.DB.Exec("INSERT INTO Surveys (Questions, Creator) values ($1, $2, $3)", questionsJson, title, id)
+	res, err := db.DB.Exec("INSERT INTO Surveys (Questions, Title, Creator) values ($1, $2, $3)", questionsJson, title, id)
 	if err != nil {
 		return err
 	}

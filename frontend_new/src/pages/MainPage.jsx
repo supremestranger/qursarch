@@ -8,11 +8,11 @@ function MainPage() {
   useEffect(() => {
     async function fetchSurveys() {
       try {
-        const response = await fetch('/api/surveys', {
-          credentials: 'include', // Include cookies
+        const response = await fetch('http://localhost:3001/v1/surveys', {
         });
         if (response.ok) {
           const data = await response.json();
+          console.log(data)
           setSurveys(data);
         } else {
           console.error('Failed to fetch surveys');
@@ -44,18 +44,18 @@ function MainPage() {
 
       {/* Surveys List */}
       <ul>
-        {surveys.length > 0 ? (
+        {surveys != null && surveys.length > 0 ? (
           surveys.map((survey) => (
             <li
-              key={survey.id}
+              key={survey.Id}
               className="border-b py-3 hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate(`/survey/${survey.id}`)}
+              onClick={() => navigate(`/survey/${survey.Id}`)}
             >
-              {survey.title}
+              {survey.Title}
             </li>
           ))
         ) : (
-          <p>No surveys found.</p>
+          <p>Опросов пока что нет.</p>
         )}
       </ul>
     </div>

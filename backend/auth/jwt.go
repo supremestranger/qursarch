@@ -16,9 +16,9 @@ var (
 func CreateToken(username string) (string, error) {
 	// Create a new JWT token with claims
 	claims := jwt.NewWithClaims(SIGNING_METHOD, jwt.MapClaims{
-		"sub": username,                         // Subject (user identifier)
-		"exp": time.Now().Add(time.Hour).Unix(), // Expiration time
-		"iat": time.Now().Unix(),                // Issued at
+		"sub": username,                                // Subject (user identifier)
+		"exp": time.Now().Add(time.Second * 10).Unix(), // Expiration time
+		"iat": time.Now().Unix(),                       // Issued at
 	})
 
 	// Print information about the created token
@@ -36,19 +36,19 @@ func VerifyToken(tokenStr string) (bool, string) {
 	if tokenStr == ADMIN_SECRET_TOKEN {
 		return true, "Admin"
 	}
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (any, error) { return "SECRET_KEY", nil })
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (any, error) { return []byte("SECRET_KEY"), nil })
 	if err != nil {
-		return false, ""
+		return false, err.Error()
 	}
 
 	if !token.Valid {
-		return false, ""
+		return false, "invalid token"
 	}
 
 	// if claims["iat"]
 
 	if token.Method.Alg() != SIGNING_METHOD.Name {
-		return false, ""
+		return false, "not correct alg"
 	}
 
 	return true, claims["sub"].(string)

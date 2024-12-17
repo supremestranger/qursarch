@@ -8,9 +8,11 @@ function SurveyPage() {
   useEffect(() => {
     const fetchSurvey = async () => {
       try {
-        const response = await fetch(`/api/surveys/${id}`);
+        const response = await fetch(`http://localhost:3001/v1/surveys/${id}`);
         if (response.ok) {
           const data = await response.json();
+          console.log(data);
+          console.log(JSON.parse(data.Questions));
           setSurvey(data);
         } else {
           console.error('Failed to fetch survey:', await response.text());
@@ -29,29 +31,29 @@ function SurveyPage() {
 
   return (
     <div className="p-5">
-      <h1 className="text-2xl font-bold mb-4">{survey.title}</h1>
+      <h1 className="text-2xl font-bold mb-4">{survey.Title}</h1>
       <div>
-        {survey.questions.map((q, index) => (
+        {JSON.parse(survey.Questions).map((q, index) => (
           <div key={index} className="mb-4">
-            <p className="font-medium">{q.title}</p>
-            {q.type === 'single_answer' && (
-              q.answers.map((answer, i) => (
+            <p className="font-medium">{q.Title}</p>
+            {q.Type === 'single_answer' && (
+              q.Answers.map((answer, i) => (
                 <label key={i} className="block">
                   <input type="radio" name={`question-${index}`} className="mr-2" />
                   {answer}
                 </label>
               ))
             )}
-            {q.type === 'multiple_answers' && (
-              q.answers.map((answer, i) => (
+            {q.Type === 'multiple_answers' && (
+              q.Answers.map((answer, i) => (
                 <label key={i} className="block">
                   <input type="checkbox" className="mr-2" />
                   {answer}
                 </label>
               ))
             )}
-            {q.type === 's_text_answer' && <input type="text" className="border p-2 rounded w-full" />}
-            {q.type === 'l_text_answer' && <textarea className="border p-2 rounded w-full" />}
+            {q.Type === 's_text_answer' && <input type="text" className="border p-2 rounded w-full" />}
+            {q.Type === 'l_text_answer' && <textarea className="border p-2 rounded w-full" />}
           </div>
         ))}
       </div>

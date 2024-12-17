@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Question from './Question';
 
-function SurveyEditor() {
+function SurveyEditor({ onSubmitSurvey }) {
   const [questions, setQuestions] = useState([]);
 
   const addQuestion = () => {
@@ -36,30 +36,6 @@ function SurveyEditor() {
     };
   };
 
-  const submitSurvey = async () => {
-    const surveyData = mapToServerSchema();
-    console.log(JSON.stringify(surveyData))
-    try {
-      const response = await fetch('/api/surveys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(surveyData),
-      });
-
-      if (response.ok) {
-        alert('Survey submitted successfully!');
-      } else {
-        console.error('Failed to submit survey:', await response.text());
-        alert('Failed to submit survey.');
-      }
-    } catch (error) {
-      console.error('Error submitting survey:', error);
-      alert('Error submitting survey.');
-    }
-  };
-
   return (
     <div className="bg-white p-5 rounded shadow">
       {questions.map((question) => (
@@ -79,7 +55,7 @@ function SurveyEditor() {
       </button>
       <button
         className="bg-green-500 text-white px-8 absolute right-10 py-2 rounded"
-        onClick={submitSurvey}
+        onClick={() => onSubmitSurvey(mapToServerSchema())}
       >
         Создать опрос
       </button>

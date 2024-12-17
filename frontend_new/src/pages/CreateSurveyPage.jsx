@@ -9,7 +9,7 @@ function getAuthToken() {
 }
 
 function CreateSurveyPage() {
-    const [title, setTitle] = useState('');
+  const [title, setTitle] = useState('');
   const [error, setError] = useState('');
 
   const token = getAuthToken();
@@ -17,10 +17,9 @@ function CreateSurveyPage() {
     return <Navigate to="/auth" />;
   }
 
-  const submitSurvey = async (surveyData) => {
-    
 
-    if (!title.trim()) {
+  const submitSurvey = async (surveyData) => {
+    if (!title.trim() || title == "") {
       setError('Survey title is required.');
       return;
     }
@@ -31,14 +30,13 @@ function CreateSurveyPage() {
     };
 
     try {
-      const response = await fetch('/api/surveys', {
+      const response = await fetch('http://localhost:3001/v1/surveys', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(payload),
+        credentials: "include",
       });
+
+      console.log(payload)
 
       if (response.ok) {
         alert('Survey created successfully!');

@@ -17,16 +17,46 @@ type SignUpRequest struct {
 }
 
 func RegisterAccountModels() {
+	utils.RegisterOnPost(ACCOUNT_ROOT+"/check_auth", onCheckAuth)
 	utils.RegisterOnGet(ACCOUNT_ROOT, onSignIn)
 	utils.RegisterOnPost(ACCOUNT_ROOT, onSignUp)
 }
 
+func onCheckAuth(rw http.ResponseWriter, req *http.Request) {
+	utils.EnableCors(rw, "http://localhost:3000")
+	rw.Header().Add("Access-Control-Allow-Credentials", "true")
+	ok, err := CheckAuth(rw, req)
+	if !ok {
+		log.Println(err)
+		http.Error(rw, "вы не авторизованы", http.StatusBadRequest)
+		return
+	}
+}
+
 func onSignIn(rw http.ResponseWriter, req *http.Request) {
-	utils.EnableCors(rw, "http://localhost:5000")
+	utils.EnableCors(rw, "http://localhost:3000")
 	// todo проверить что пароль правильный
 
-	username := ""
-	token, err := auth.CreateToken(username)
+	var signUpReq SignUpRequest
+	err := json.NewDecoder(req.Body).Decode(&signUpReq)
+	if err != nil {
+		log.Println(err)
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(signUpReq.Login) == 0 {
+		log.Println(err)
+		http.Error(rw, "Too short username", http.StatusBadRequest)
+		return
+	}
+
+	if len(signUpReq.Password) == 0 {
+		log.Println(err)
+		http.Error(rw, "Too short password", http.StatusBadRequest)
+		return
+	}
+	// ok := accounts.Login(signUpReq.Login, signUpReq.Password)
+	token, err := auth.CreateToken(signUpReq.Login)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
