@@ -1,0 +1,100 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    background-color: #fdb0b0;
+    color: #000000;
+    padding: 10px 0;
+    text-align: center;
+}
+
+nav a {
+    color: #000000;
+    margin: 0 15px;
+    text-decoration: none;
+}
+
+main {
+    padding: 20px;
+}
+
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background-color: #28a745;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+.negative-btn {
+    background-color: #f84949;
+}
+
+.negative-btn:hover {
+    background-color: #b92a2a;
+}
+
+.action {
+    margin-bottom: 20px;
+}
+
+.question {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 5px;
+    background-color: #fafafa;
+}
+
+.answer-option {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.answer-option input[type="text"] {
+    flex: 1;
+    margin-right: 10px;
+}
+
+footer {
+    background-color: #e5f1ff;
+    color: #000000;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}

@@ -1,0 +1,40 @@
+<!-- analysis.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Аналитика Опроса</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Аналитика Опроса</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+        </nav>
+    </header>
+    <main>
+        <form id="analysis-form">
+            <label for="analysis-survey-id-input">ID Опроса:</label>
+            <input type="text" id="analysis-survey-id-input" placeholder="Введите ID опроса" required>
+
+            <label for="analysis-type">Тип Анализа:</label>
+            <select id="analysis-type" name="type">
+                <option value="heatmap">Тепловая Карта</option>
+                <option value="response_count">Количество Ответов</option>
+                <option value="average_score">Средний Балл</option>
+            </select>
+
+            <button type="submit">Получить Аналитику</button>
+        </form>
+
+        <div id="analysis-result"></div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Платформа Опросов</p>
+    </footer>
+
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/analysis.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!-- create_survey.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание Опроса</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Создание Опроса</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+        </nav>
+    </header>
+    <main>
+        <form id="create-survey-form">
+            <label for="survey-title">Название опроса:</label>
+            <input type="text" id="survey-title" name="title" required>
+
+            <label for="survey-description">Аннотация:</label>
+            <textarea id="survey-description" name="description" rows="3"></textarea>
+
+            <h2>Вопросы</h2>
+            <div id="questions-container"></div>
+            <button type="button" onclick="addQuestion()">Добавить Вопрос</button>
+
+            <button type="submit">Создать Опрос</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2024 Платформа Опросов</p>
+    </footer>
+
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/create_survey.js"></script>
+</body>
+</html>

@@ -6,12 +6,12 @@ services:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
     environment:
       POSTGRES_DB: "QDB"
-      POSTGRES_USER: "QDBSU"
+      POSTGRES_USER: "dbmaster"
       POSTGRES_PASSWORD: "TheSacredKailash"
     ports: 
       - 5432:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U QDBSU -d QDB"]
+      test: ["CMD-SHELL", "pg_isready -U dbmaster -d QDB"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -29,7 +29,7 @@ services:
       DB_HOST: database
       DB_PORT: 5432
       DB_NAME: QDB
-      DB_USER: QDBSU
+      DB_USER: dbmaster
       DB_PASSWORD: TheSacredKailash
   
   nginx:
@@ -37,7 +37,7 @@ services:
     volumes:
     - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "3001:3001"
+      - "8080:8080"
     depends_on:
       - backend
 
