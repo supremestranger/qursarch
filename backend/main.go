@@ -49,6 +49,6 @@ func main() {
     http.Handle("/analytics/", middleware.AuthMiddleware(analyticsHandler))
 
     // Запуск сервера
-    log.Println("Сервер запущен на :8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    log.Println("Сервер запущен на :8081")
+    log.Fatal(http.ListenAndServe(":8081", nil))
 }
