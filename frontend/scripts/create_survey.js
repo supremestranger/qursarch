@@ -1,156 +1,161 @@
 // scripts/create_survey.js
 
+let questionCount = 0;
+
 /**
- * Функция для добавления нового вопроса в форму создания опроса.
+ * Добавляет новый вопрос в форму создания опроса.
  */
 function addQuestion() {
+    questionCount++;
     const container = document.getElementById('questions-container');
-    const questionCount = container.children.length + 1;
 
     const questionDiv = document.createElement('div');
     questionDiv.className = 'question';
+    questionDiv.id = `question-${questionCount}`;
+
     questionDiv.innerHTML = `
-        <h3>Вопрос ${questionCount}</h3>
-        <label>Текст вопроса:</label>
-        <input type="text" name="question_text" required>
-        
-        <label>Тип вопроса:</label>
-        <select name="question_type" onchange="toggleOptions(this)">
+        <h4>Вопрос ${questionCount}</h4>
+        <label for="question_text_${questionCount}">Текст Вопроса:</label>
+        <textarea id="question_text_${questionCount}" name="question_text" required></textarea>
+
+        <label for="question_type_${questionCount}">Тип Вопроса:</label>
+        <select id="question_type_${questionCount}" name="question_type" onchange="toggleOptions(${questionCount})" required>
+            <option value="">--Выберите Тип--</option>
             <option value="single_choice">Один вариант ответа</option>
             <option value="multiple_choice">Несколько вариантов ответа</option>
-            <option value="free_text">Свободный ответ</option>
+            <option value="free_text">Свободная форма</option>
         </select>
-        
-        <div class="options-container">
-            <button type="button" onclick="addOption(this)">Добавить Вариант</button>
+
+        <div id="options_container_${questionCount}" style="display:none;">
+            <h5>Варианты Ответов</h5>
+            <div id="options_list_${questionCount}">
+                <!-- Варианты ответов будут добавляться динамически -->
+            </div>
+            <button type="button" onclick="addOption(${questionCount})">Добавить Вариант</button>
         </div>
-        <button type="button" class="negative-btn" onclick="removeQuestion(this)">Удалить Вопрос</button>
+
+        <button type="button" onclick="removeQuestion(${questionCount})">Удалить Вопрос</button>
     `;
+
     container.appendChild(questionDiv);
 }
 
 /**
- * Функция для удаления вопроса из формы создания опроса.
- * @param {HTMLElement} button - Кнопка удаления вопроса.
+ * Добавляет вариант ответа к заданному вопросу.
+ * @param {number} qID - ID вопроса.
  */
-function removeQuestion(button) {
-    const questionDiv = button.parentElement;
-    questionDiv.remove();
-    renumberQuestions();
-}
+function addOption(qID) {
+    const optionsList = document.getElementById(`options_list_${qID}`);
+    const optionCount = optionsList.childElementCount + 1;
 
-/**
- * Функция для добавления нового варианта ответа к вопросу.
- * @param {HTMLElement} button - Кнопка добавления варианта.
- */
-function addOption(button) {
-    const optionsContainer = button.parentElement;
     const optionDiv = document.createElement('div');
-    optionDiv.className = 'answer-option';
+    optionDiv.className = 'option';
+    optionDiv.id = `question_${qID}_option_${optionCount}`;
+
     optionDiv.innerHTML = `
-        <input type="text" name="option_text" placeholder="Текст варианта" required>
-        <button type="button" class="negative-btn" onclick="removeOption(this)">Удалить</button>
+        <label for="question_${qID}_option_text_${optionCount}">Вариант ${optionCount}:</label>
+        <input type="text" id="question_${qID}_option_text_${optionCount}" name="question_${qID}_option_text" required>
+        <button type="button" onclick="removeOption(${qID}, ${optionCount})">Удалить Вариант</button>
     `;
-    optionsContainer.insertBefore(optionDiv, button);
+
+    optionsList.appendChild(optionDiv);
 }
 
 /**
- * Функция для удаления варианта ответа из вопроса.
- * @param {HTMLElement} button - Кнопка удаления варианта.
+ * Удаляет вариант ответа из вопроса.
+ * @param {number} qID - ID вопроса.
+ * @param {number} oID - ID варианта ответа.
  */
-function removeOption(button) {
-    const optionDiv = button.parentElement;
-    optionDiv.remove();
-}
-
-/**
- * Функция для отображения или скрытия контейнера опций ответов в зависимости от типа вопроса.
- * @param {HTMLElement} select - Выпадающий список выбора типа вопроса.
- */
-function toggleOptions(select) {
-    const questionDiv = select.parentElement.parentElement;
-    const optionsContainer = questionDiv.querySelector('.options-container');
-    if (select.value === 'free_text') {
-        optionsContainer.style.display = 'none';
-    } else {
-        optionsContainer.style.display = 'block';
+function removeOption(qID, oID) {
+    const optionDiv = document.getElementById(`question_${qID}_option_${oID}`);
+    if (optionDiv) {
+        optionDiv.remove();
     }
 }
 
 /**
- * Функция для перенумерации вопросов после удаления.
+ * Удаляет вопрос из формы создания опроса.
+ * @param {number} qID - ID вопроса.
  */
-function renumberQuestions() {
-    const container = document.getElementById('questions-container');
-    const questionDivs = container.querySelectorAll('.question');
-    questionDivs.forEach((qDiv, index) => {
-        const header = qDiv.querySelector('h3');
-        if (header) {
-            header.textContent = `Вопрос ${index + 1}`;
-        }
-    });
+function removeQuestion(qID) {
+    const questionDiv = document.getElementById(`question-${qID}`);
+    if (questionDiv) {
+        questionDiv.remove();
+    }
 }
 
-// Обработка формы создания опроса
-document.addEventListener('DOMContentLoaded', function() {
-    const createForm = document.getElementById('create-survey-form');
-    if (createForm) {
-        createForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const title = document.getElementById('survey-title').value.trim();
-            const description = document.getElementById('survey-description').value.trim();
+/**
+ * Показывает или скрывает контейнер с вариантами ответов в зависимости от выбранного типа вопроса.
+ * @param {number} qID - ID вопроса.
+ */
+function toggleOptions(qID) {
+    const select = document.getElementById(`question_type_${qID}`);
+    const selected = select.value;
+    const optionsContainer = document.getElementById(`options_container_${qID}`);
 
-            if (title === '') {
-                showError('Пожалуйста, введите название опроса.');
-                return;
-            }
+    if (selected === "single_choice" || selected === "multiple_choice") {
+        optionsContainer.style.display = 'block';
+    } else {
+        optionsContainer.style.display = 'none';
+    }
+}
 
-            const questions = [];
-            const questionDivs = document.querySelectorAll('#questions-container .question');
-            for (const qDiv of questionDivs) {
-                const questionText = qDiv.querySelector('input[name="question_text"]').value.trim();
-                const questionType = qDiv.querySelector('select[name="question_type"]').value;
-                const options = [];
+// Обработка отправки формы создания опроса
+const createSurveyForm = document.getElementById('create-survey-form');
+if (createSurveyForm) {
+    createSurveyForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-                if (questionType === 'single_choice' || questionType === 'multiple_choice') {
-                    const optionInputs = qDiv.querySelectorAll('input[name="option_text"]');
-                    for (const optInput of optionInputs) {
-                        const optText = optInput.value.trim();
-                        if (optText !== '') {
-                            options.push(optText);
+        const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+
+        const questions = [];
+        for (let i = 1; i <= questionCount; i++) {
+            const questionText = document.getElementById(`question_text_${i}`);
+            const questionType = document.getElementById(`question_type_${i}`);
+
+            if (questionText && questionType && questionText.value.trim() !== "" && questionType.value !== "") {
+                const question = {
+                    QuestionText: questionText.value.trim(),
+                    QuestionType: questionType.value,
+                    Options: []
+                };
+
+                if (questionType.value === "single_choice" || questionType.value === "multiple_choice") {
+                    const optionsList = document.querySelectorAll(`#question-${i} .option input[name="question_${i}_option_text"]`);
+                    optionsList.forEach(opt => {
+                        if (opt.value.trim() !== "") {
+                            question.Options.push({ OptionText: opt.value.trim() });
                         }
-                    }
-                    if (options.length === 0) {
-                        showError(`Пожалуйста, добавьте хотя бы один вариант ответа для вопроса: "${questionText}".`);
+                    });
+
+                    if (question.Options.length === 0) {
+                        showError(`Пожалуйста, добавьте хотя бы один вариант ответа для вопроса ${i}.`);
                         return;
                     }
                 }
 
-                questions.push({
-                    question_text: questionText,
-                    question_type: questionType,
-                    options: options
-                });
+                questions.push(question);
             }
+        }
 
-            if (questions.length === 0) {
-                showError('Пожалуйста, добавьте хотя бы один вопрос в опрос.');
-                return;
-            }
+        if (questions.length === 0) {
+            showError("Пожалуйста, добавьте хотя бы один вопрос.");
+            return;
+        }
 
-            const surveyData = {
-                title: title,
-                description: description,
-                questions: questions
-            };
+        const surveyData = {
+            Title: title,
+            Description: description,
+            Questions: questions
+        };
 
-            try {
-                const res = await httpRequest('POST', '/survey/create', surveyData);
-                showSuccess(`Опрос успешно создан с ID ${res}`);
-                window.location.href = 'index.html';
-            } catch (err) {
-                showError(`Ошибка при создании опроса: ${err}`);
-            }
-        });
-    }
-});
+        try {
+            const res = await httpRequest('POST', '/api/surveys', surveyData);
+            showSuccess(`Опрос создан с ID: ${res.survey_id}`);
+            window.location.href = 'view_surveys.html';
+        } catch (err) {
+            showError(`Ошибка при создании опроса: ${err.message}`);
+        }
+    });
+}

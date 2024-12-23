@@ -1,37 +1,34 @@
-<!-- edit_survey.html -->
+<!-- static/edit_survey.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Редактирование Опроса</title>
+    <title>Редактировать Опрос</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Редактирование Опроса</h1>
+        <h1>Редактировать Опрос</h1>
         <nav>
             <a href="index.html">Главная</a>
+            <button id="logout-button">Выйти</button>
         </nav>
     </header>
     <main>
         <form id="edit-survey-form">
-            <label for="edit-survey-id-input">ID Опроса:</label>
-            <input type="text" id="edit-survey-id-input" placeholder="Введите ID опроса" required>
-            <button type="button" onclick="loadSurvey()">Загрузить Опрос</button>
+            <label for="title">Название Опроса:</label>
+            <input type="text" id="title" name="title" required>
 
-            <div id="edit-survey-details" style="display:none;">
-                <label for="edit-survey-title">Название опроса:</label>
-                <input type="text" id="edit-survey-title" name="title" required>
+            <label for="description">Описание (опционально):</label>
+            <textarea id="description" name="description"></textarea>
 
-                <label for="edit-survey-description">Аннотация:</label>
-                <textarea id="edit-survey-description" name="description" rows="3"></textarea>
-
-                <h2>Вопросы</h2>
-                <div id="edit-questions-container"></div>
-                <button type="button" onclick="addEditQuestion()">Добавить Вопрос</button>
-
-                <button type="submit">Сохранить Изменения</button>
+            <div id="questions-container">
+                <h3>Вопросы</h3>
+                <!-- Вопросы будут добавляться динамически -->
             </div>
+
+            <button type="button" onclick="addQuestion()">Добавить Вопрос</button>
+            <button type="submit">Сохранить Изменения</button>
         </form>
     </main>
     <footer>

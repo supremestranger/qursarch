@@ -2,27 +2,37 @@
 package db
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
+    "database/sql"
+    "fmt"
+    "log"
+    "os"
 
-	_ "github.com/lib/pq"
+    _ "github.com/lib/pq"
 )
 
 var DB *sql.DB
 
 func InitDB() {
-	var err error
-	connStr := "host = database user=dbmaster password=TheSacredKailash dbname=QDB port=5432 sslmode=disable"
-	DB, err = sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatalf("Не удалось подключиться к базе данных: %v", err)
-	}
+    var err error
+    dbHost := os.Getenv("DB_HOST")
+    dbPort := os.Getenv("DB_PORT")
+    dbUser := os.Getenv("DB_USER")
+    dbPassword := os.Getenv("DB_PASSWORD")
+    dbName := os.Getenv("DB_NAME")
 
-	err = DB.Ping()
-	if err != nil {
-		log.Fatalf("Не удалось пинговать базу данных: %v", err)
-	}
+    psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+        "password=%s dbname=%s sslmode=disable",
+        dbHost, dbPort, dbUser, dbPassword, dbName)
 
-	fmt.Println("Успешно подключились к базе данных")
+    DB, err = sql.Open("postgres", psqlInfo)
+    if err != nil {
+        log.Fatalf("Не удалось подключиться к базе данных: %v", err)
+    }
+
+    err = DB.Ping()
+    if err != nil {
+        log.Fatalf("Не удалось пинговать базу данных: %v", err)
+    }
+
+    log.Println("Успешно подключились к базе данных")
 }

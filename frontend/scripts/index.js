@@ -1,16 +1,16 @@
 // scripts/index.js
 
-// Функция для проверки авторизации
+// Функция для проверки аутентификации администратора
 async function checkAuth() {
     try {
-        const res = await httpRequest('GET', '/check_auth', null);
+        const res = await httpRequest('GET', '/api/check_auth', null);
         if (res.authenticated) {
             document.getElementById('logout-button').style.display = 'inline-block';
             document.getElementById('protected-content').style.display = 'block';
             document.getElementById('auth-forms').style.display = 'none';
         }
     } catch (err) {
-        console.log('Пользователь не авторизован');
+        console.log('Администратор не авторизован');
         document.getElementById('logout-button').style.display = 'none';
         document.getElementById('protected-content').style.display = 'none';
         document.getElementById('auth-forms').style.display = 'block';
@@ -32,11 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const res = await httpRequest('POST', '/login', { login, password });
+                const res = await httpRequest('POST', '/api/login', { login, password });
                 showSuccess('Успешный вход');
                 checkAuth();
             } catch (err) {
-                showError('Ошибка при входе: ' + err);
+                showError(`Ошибка при входе: ${err.message}`);
             }
         });
     }
@@ -55,11 +55,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const res = await httpRequest('POST', '/register', { login, password });
+                const res = await httpRequest('POST', '/api/register', { login, password });
                 showSuccess('Успешная регистрация');
                 checkAuth();
             } catch (err) {
-                showError('Ошибка при регистрации: ' + err);
+                showError(`Ошибка при регистрации: ${err.message}`);
             }
         });
     }
@@ -69,54 +69,43 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutButton) {
         logoutButton.addEventListener('click', async function() {
             try {
-                const res = await httpRequest('POST', '/logout', null);
+                const res = await httpRequest('POST', '/api/logout', null);
                 showSuccess(res.message);
-                // Перезагрузить страницу или обновить интерфейс
                 window.location.href = 'index.html';
             } catch (err) {
-                showError('Ошибка при выходе: ' + err);
+                showError(`Ошибка при выходе: ${err.message}`);
             }
         });
     }
 
-    // Проверка авторизации при загрузке страницы
+    // Проверка аутентификации при загрузке страницы
     checkAuth();
 });
 
 // Навигационные функции
 
 /**
- * Функция для перехода на страницу прохождения опроса.
+ * Функция для перехода на страницу создания опроса.
  */
-function takeSurvey() {
-    const surveyID = prompt("Введите ID опроса:");
-    if (surveyID === null || surveyID.trim() === "") {
-        showError('Пожалуйста, введите ID опроса.');
-        return;
-    }
-    window.location.href = `survey.html?id=${encodeURIComponent(surveyID.trim())}`;
+function createSurvey() {
+    window.location.href = 'create_survey.html';
 }
 
 /**
- * Функция для перехода на страницу редактирования опроса.
+ * Функция для перехода на страницу просмотра опросов.
  */
-function editSurvey() {
-    const surveyID = prompt("Введите ID опроса для редактирования:");
-    if (surveyID === null || surveyID.trim() === "") {
-        showError('Пожалуйста, введите ID опроса.');
-        return;
-    }
-    window.location.href = `edit_survey.html?id=${encodeURIComponent(surveyID.trim())}`;
+function viewSurveys() {
+    window.location.href = 'view_surveys.html';
 }
 
 /**
  * Функция для перехода на страницу аналитики опроса.
  */
-function viewAnalysis() {
+function viewAnalytics() {
     const surveyID = prompt("Введите ID опроса для аналитики:");
     if (surveyID === null || surveyID.trim() === "") {
         showError('Пожалуйста, введите ID опроса.');
         return;
     }
-    window.location.href = `analysis.html?id=${encodeURIComponent(surveyID.trim())}`;
+    window.location.href = `analytics.html?id=${encodeURIComponent(surveyID.trim())}`;
 }

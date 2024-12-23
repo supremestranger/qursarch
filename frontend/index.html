@@ -1,19 +1,22 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Платформа Опросов</title>
+    <title>Платформа Опросов - Вход</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <h1>Платформа Опросов</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+            <button id="logout-button" style="display:none;">Выйти</button>
+        </nav>
     </header>
     <main>
-        <section id="auth-section">
-            <h2>Вход</h2>
+        <div id="auth-forms">
             <form id="login-form">
+                <h2>Вход</h2>
                 <label for="login">Логин:</label>
                 <input type="text" id="login" name="login" required>
                 <label for="password">Пароль:</label>
@@ -21,34 +24,22 @@
                 <button type="submit">Войти</button>
             </form>
 
-            <h2>Регистрация</h2>
             <form id="register-form">
+                <h2>Регистрация</h2>
                 <label for="reg-login">Логин:</label>
                 <input type="text" id="reg-login" name="login" required>
                 <label for="reg-password">Пароль:</label>
                 <input type="password" id="reg-password" name="password" required>
                 <button type="submit">Зарегистрироваться</button>
             </form>
-        </section>
+        </div>
 
-        <section id="actions-section">
-            <h2>Действия</h2>
-            <div class="action">
-                <h3>Пройти опрос</h3>
-                <input type="text" id="take-survey-id" placeholder="Введите ID опроса">
-                <button onclick="takeSurvey()">Пройти</button>
-            </div>
-            <div class="action">
-                <h3>Редактировать опрос</h3>
-                <input type="text" id="edit-survey-id" placeholder="Введите ID опроса">
-                <button onclick="editSurvey()">Редактировать</button>
-            </div>
-            <div class="action">
-                <h3>Просмотреть аналитику</h3>
-                <input type="text" id="analysis-survey-id" placeholder="Введите ID опроса">
-                <button onclick="viewAnalysis()">Просмотреть</button>
-            </div>
-        </section>
+        <div id="protected-content" style="display:none;">
+            <!-- Контент, доступный только авторизованным администраторам -->
+            <button onclick="createSurvey()">Создать Опрос</button>
+            <button onclick="viewSurveys()">Просмотреть Опросы</button>
+            <button onclick="viewAnalytics()">Посмотреть Аналитику</button>
+        </div>
     </main>
     <footer>
         <p>&copy; 2024 Платформа Опросов</p>

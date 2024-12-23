@@ -5,16 +5,16 @@ import (
     "context"
     "crypto/sha256"
     "encoding/json"
+    "fmt"
     "net/http"
     "time"
 
     "github.com/golang-jwt/jwt"
     "survey-platform-server/db"
     "survey-platform-server/models"
-    "fmt"
 )
 
-var JwtKey = []byte("your_secret_key") // Заменить на мой секретный ключ
+var JwtKey = []byte("your_secret_key") // Замените на безопасный ключ
 
 type Credentials struct {
     Login    string `json:"login"`
@@ -22,23 +22,24 @@ type Credentials struct {
 }
 
 type Claims struct {
-    UserID int `json:"user_id"`
+    AdminID int `json:"admin_id"`
     jwt.StandardClaims
 }
 
 type contextKey string
 
-const userIDKey = contextKey("userID")
+const adminIDKey = contextKey("adminID")
 
-func SetUserID(ctx context.Context, userID int) context.Context {
-    return context.WithValue(ctx, userIDKey, userID)
+func SetAdminID(ctx context.Context, adminID int) context.Context {
+    return context.WithValue(ctx, adminIDKey, adminID)
 }
 
-func GetUserID(ctx context.Context) (int, bool) {
-    userID, ok := ctx.Value(userIDKey).(int)
-    return userID, ok
+func GetAdminID(ctx context.Context) (int, bool) {
+    adminID, ok := ctx.Value(adminIDKey).(int)
+    return adminID, ok
 }
 
+// RegisterHandler регистрирует нового администратора
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
         http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
@@ -60,23 +61,24 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
     // Хэширование пароля
     hashedPassword := fmt.Sprintf("%x", sha256.Sum256([]byte(creds.Password)))
 
-    // Вставка нового пользователя в базу данных
-    var userID int
+    // Вставка нового администратора в базу данных
+    var adminID int
     err = db.DB.QueryRow(
-        "INSERT INTO users (login, password) VALUES ($1, $2) RETURNING userid",
-        creds.Login, hashedPassword).Scan(&userID)
+        "INSERT INTO Admins (Login, Password) VALUES ($1, $2) RETURNING AdminID",
+        creds.Login, hashedPassword).Scan(&adminID)
     if err != nil {
-        http.Error(w, "Ошибка при регистрации пользователя", http.StatusInternalServerError)
+        http.Error(w, "Ошибка при регистрации администратора", http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(map[string]interface{}{
         "message":  "Успешная регистрация",
-        "user_id":  userID,
+        "admin_id": adminID,
     })
 }
 
+// LoginHandler осуществляет вход администратора
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
         http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
@@ -98,17 +100,17 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
     // Хэширование пароля
     hashedPassword := fmt.Sprintf("%x", sha256.Sum256([]byte(creds.Password)))
 
-    // Проверка пользователя в базе данных
-    var user models.User
+    // Проверка администратора в базе данных
+    var admin models.Admin
     err = db.DB.QueryRow(
-        "SELECT userid, login, password FROM users WHERE login=$1",
-        creds.Login).Scan(&user.UserID, &user.Login, &user.Password)
+        "SELECT AdminID, Login, Password FROM Admins WHERE Login=$1",
+        creds.Login).Scan(&admin.AdminID, &admin.Login, &admin.Password)
     if err != nil {
         http.Error(w, "Неверные учетные данные", http.StatusUnauthorized)
         return
     }
 
-    if user.Password != hashedPassword {
+    if admin.Password != hashedPassword {
         http.Error(w, "Неверные учетные данные", http.StatusUnauthorized)
         return
     }
@@ -116,7 +118,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
     // Создание JWT-токена
     expirationTime := time.Now().Add(24 * time.Hour) // Токен действует 24 часа
     claims := &Claims{
-        UserID: user.UserID,
+        AdminID: admin.AdminID,
         StandardClaims: jwt.StandardClaims{
             ExpiresAt: expirationTime.Unix(),
         },
@@ -143,10 +145,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(map[string]interface{}{
         "message": "Успешный вход",
-        "user_id": user.UserID,
+        "admin_id": admin.AdminID,
     })
 }
 
+// LogoutHandler осуществляет выход администратора
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
         http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
@@ -170,6 +173,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     })
 }
 
+// CheckAuthHandler проверяет аутентификацию администратора
 func CheckAuthHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodGet {
         http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
@@ -212,6 +216,47 @@ func CheckAuthHandler(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(map[string]interface{}{
         "authenticated": true,
-        "user_id":       claims.UserID,
+        "admin_id":      claims.AdminID,
+    })
+}
+
+// Middleware для аутентификации администратора
+func AuthMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Получение токена из куки
+        c, err := r.Cookie("token")
+        if err != nil {
+            if err == http.ErrNoCookie {
+                http.Error(w, "Неавторизованный доступ: нет токена", http.StatusUnauthorized)
+                return
+            }
+            http.Error(w, "Ошибка при получении куки", http.StatusBadRequest)
+            return
+        }
+
+        tokenStr := c.Value
+
+        claims := &Claims{}
+
+        // Парсинг токена
+        token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+            return JwtKey, nil
+        })
+        if err != nil {
+            if err == jwt.ErrSignatureInvalid {
+                http.Error(w, "Неверная подпись токена", http.StatusUnauthorized)
+                return
+            }
+            http.Error(w, "Невалидный токен", http.StatusBadRequest)
+            return
+        }
+        if !token.Valid {
+            http.Error(w, "Невалидный токен", http.StatusUnauthorized)
+            return
+        }
+
+        // Добавление AdminID в контекст запроса
+        ctx := context.WithValue(r.Context(), adminIDKey, claims.AdminID)
+        next.ServeHTTP(w, r.WithContext(ctx))
     })
 }

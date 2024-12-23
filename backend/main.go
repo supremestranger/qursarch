@@ -5,30 +5,27 @@ import (
     "log"
     "net/http"
     "strings"
-
     "survey-platform-server/db"
     "survey-platform-server/handlers"
-    "survey-platform-server/middleware"
 )
 
 func main() {
     // Инициализация базы данных
     db.InitDB()
 
-    // Регистрация обработчиков маршрутов
-    http.HandleFunc("/register", handlers.RegisterHandler)
-    http.HandleFunc("/login", handlers.LoginHandler)
-    http.HandleFunc("/logout", handlers.LogoutHandler)
-    http.HandleFunc("/check_auth", handlers.CheckAuthHandler)
+    // Маршруты аутентификации
+    http.HandleFunc("/api/register", handlers.RegisterHandler)
+    http.HandleFunc("/api/login", handlers.LoginHandler)
+    http.HandleFunc("/api/logout", handlers.LogoutHandler)
+    http.HandleFunc("/api/check_auth", handlers.CheckAuthHandler)
 
-    // Защищённые маршруты
-    surveyHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        if strings.HasPrefix(r.URL.Path, "/survey/create") {
-            handlers.CreateSurveyHandler(w, r)
-            return
-        }
-        if strings.HasPrefix(r.URL.Path, "/survey/edit/") {
-            handlers.EditSurveyHandler(w, r)
+    // Защищённые маршруты для управления опросами и аналитики
+    // Используем AuthMiddleware для защиты этих маршрутов
+    surveyMux := http.NewServeMux()
+    surveyMux.HandleFunc("/api/surveys", handlers.CreateSurveyHandler) // Создание опроса
+    surveyMux.HandleFunc("/api/surveys/", func(w http.ResponseWriter, r *http.Request) {
+        if strings.HasSuffix(r.URL.Path, "/analytics") {
+            handlers.AnalyticsHandler(w, r)
             return
         }
         if strings.HasSuffix(r.URL.Path, "/submit") {
@@ -39,14 +36,16 @@ func main() {
             handlers.GetSurveyHandler(w, r)
             return
         }
+        if r.Method == http.MethodPut {
+            handlers.EditSurveyHandler(w, r)
+            return
+        }
         http.Error(w, "Неизвестный маршрут", http.StatusNotFound)
     })
 
-    analyticsHandler := http.HandlerFunc(handlers.AnalysisHandler)
-
     // Применение middleware к защищённым маршрутам
-    http.Handle("/survey/", middleware.AuthMiddleware(surveyHandler))
-    http.Handle("/analytics/", middleware.AuthMiddleware(analyticsHandler))
+    protectedSurveyHandler := handlers.AuthMiddleware(surveyMux)
+    http.Handle("/api/surveys/", protectedSurveyHandler)
 
     // Запуск сервера
     log.Println("Сервер запущен на :8081")

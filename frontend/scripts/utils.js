@@ -1,47 +1,47 @@
 // scripts/utils.js
 
 /**
- * Функция для отправки HTTP-запросов с использованием fetch().
+ * Выполняет HTTP-запрос с использованием Fetch API.
  * @param {string} method - HTTP метод (GET, POST, PUT, DELETE).
- * @param {string} url - URL запроса.
- * @param {object|null} data - Данные для отправки (для POST, PUT).
- * @returns {Promise<object>} - Возвращает Promise с результатом запроса.
+ * @param {string} url - URL для запроса.
+ * @param {Object} data - Тело запроса в формате JSON.
+ * @returns {Promise<Object>} - Данные ответа в формате JSON.
  */
-async function httpRequest(method, url, data = null) {
+async function httpRequest(method, url, data) {
     const options = {
         method: method,
-        headers: {}
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include' // Включает куки в запрос
     };
 
     if (data) {
-        options.headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(data);
     }
 
-    try {
-        const response = await fetch(url, options);
-        const responseData = await response.json();
-        if (!response.ok) {
-            throw new Error(responseData || 'Ошибка сети');
-        }
-        return responseData;
-    } catch (error) {
-        throw error.message || 'Ошибка сети';
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Ошибка запроса');
     }
+
+    return response.json();
 }
 
 /**
- * Функция для отображения сообщений об ошибках.
+ * Отображает сообщение об ошибке пользователю.
  * @param {string} message - Сообщение об ошибке.
  */
 function showError(message) {
-    alert(message);
+    alert(`Ошибка: ${message}`);
 }
 
 /**
- * Функция для отображения успешных сообщений.
- * @param {string} message - Успешное сообщение.
+ * Отображает сообщение об успехе пользователю.
+ * @param {string} message - Сообщение об успехе.
  */
 function showSuccess(message) {
-    alert(message);
+    alert(`Успех: ${message}`);
 }

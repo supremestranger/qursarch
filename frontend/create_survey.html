@@ -1,30 +1,32 @@
-<!-- create_survey.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Создание Опроса</title>
+    <title>Создать Опрос</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Создание Опроса</h1>
+        <h1>Создать Опрос</h1>
         <nav>
             <a href="index.html">Главная</a>
+            <button id="logout-button">Выйти</button>
         </nav>
     </header>
     <main>
         <form id="create-survey-form">
-            <label for="survey-title">Название опроса:</label>
-            <input type="text" id="survey-title" name="title" required>
+            <label for="title">Название Опроса:</label>
+            <input type="text" id="title" name="title" required>
 
-            <label for="survey-description">Аннотация:</label>
-            <textarea id="survey-description" name="description" rows="3"></textarea>
+            <label for="description">Описание (опционально):</label>
+            <textarea id="description" name="description"></textarea>
 
-            <h2>Вопросы</h2>
-            <div id="questions-container"></div>
+            <div id="questions-container">
+                <h3>Вопросы</h3>
+                <!-- Вопросы будут добавляться динамически -->
+            </div>
+
             <button type="button" onclick="addQuestion()">Добавить Вопрос</button>
-
             <button type="submit">Создать Опрос</button>
         </form>
     </main>
