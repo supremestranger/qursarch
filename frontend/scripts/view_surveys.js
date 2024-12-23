@@ -5,25 +5,35 @@
  */
 async function loadSurveys() {
     try {
+        // Отправка GET-запроса для получения списка опросов
         const response = await httpRequest('GET', '/api/surveys', null);
         const surveysContainer = document.getElementById('surveys-container');
 
+        // Очистка контейнера перед отображением новых опросов
+        surveysContainer.innerHTML = '';
+
         if (Array.isArray(response)) {
+            if (response.length === 0) {
+                surveysContainer.innerHTML = '<p>Нет доступных опросов.</p>';
+                return;
+            }
+
             response.forEach(survey => {
                 const surveyDiv = document.createElement('div');
                 surveyDiv.className = 'survey';
 
+                // Создание HTML-контента для каждого опроса
                 surveyDiv.innerHTML = `
-                    <h3>${survey.Title}</h3>
-                    <p>${survey.Description || 'Без описания'}</p>
-                    <p>Создан: ${new Date(survey.CreatedAt).toLocaleString()}</p>
-                    <button onclick="viewSurvey(${survey.SurveyID})">Просмотреть</button>
+                    <h3>${sanitizeHTML(survey.title)}</h3>
+                    <p>${sanitizeHTML(survey.description || 'Без описания')}</p>
+                    <p>Создан: ${new Date(survey.created_at).toLocaleString()}</p>
+                    <button onclick="viewSurvey(${survey.survey_id})">Просмотреть</button>
                 `;
 
                 surveysContainer.appendChild(surveyDiv);
             });
         } else {
-            surveysContainer.innerHTML = '<p>Нет доступных опросов.</p>';
+            surveysContainer.innerHTML = '<p>Не удалось загрузить опросы.</p>';
         }
     } catch (err) {
         showError(`Ошибка при загрузке опросов: ${err.message}`);
@@ -35,7 +45,18 @@ async function loadSurveys() {
  * @param {number} surveyID - ID опроса.
  */
 function viewSurvey(surveyID) {
-    window.location.href = `survey_detail.html?id=${surveyID}`;
+    window.location.href = `survey_detail.html?id=${encodeURIComponent(surveyID)}`;
+}
+
+/**
+ * Функция для безопасного вывода HTML-содержимого, предотвращающая XSS атаки.
+ * @param {string} str - Входная строка.
+ * @returns {string} - Очищенная строка.
+ */
+function sanitizeHTML(str) {
+    const temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
 }
 
 // Обработка выхода
