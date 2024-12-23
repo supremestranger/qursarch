@@ -17,6 +17,18 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: elestio/pgadmin:latest
+    restart: unless-stopped
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dbmaster@nigger.com
+      PGADMIN_DEFAULT_PASSWORD: TheSacredKailash
+    volumes:
+      - pgadmin-data:/car/lib/pgadmin
 
   backend:
     build: backend
@@ -43,5 +55,6 @@ services:
       - backend
 
 volumes:
+  pgadmin-data:
   dbdata:
     driver: local
