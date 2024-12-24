@@ -89,6 +89,43 @@ func CreateSurveyHandler(w http.ResponseWriter, r *http.Request) {
     })
 }
 
+func ListSurveysHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Выполнение запроса к базе данных для получения всех опросов
+    rows, err := db.DB.Query("SELECT SurveyID, Title, Description, CreatedAt, CreatedBy FROM Surveys")
+    if err != nil {
+        http.Error(w, "Ошибка при получении опросов", http.StatusInternalServerError)
+        return
+    }
+    defer rows.Close()
+
+    var surveys []models.Survey
+
+    for rows.Next() {
+        var survey models.Survey
+        var createdBy sql.NullInt32
+        err := rows.Scan(&survey.SurveyID, &survey.Title, &survey.Description, &survey.CreatedAt, &createdBy)
+        if err != nil {
+            http.Error(w, "Ошибка при сканировании опросов", http.StatusInternalServerError)
+            return
+        }
+        if createdBy.Valid {
+            cid := int(createdBy.Int32)
+            survey.CreatedBy = &cid
+        } else {
+            survey.CreatedBy = nil
+        }
+        surveys = append(surveys, survey)
+    }
+    
+    // Отправка ответа в формате JSON
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(surveys)
+}
 // EditSurveyHandler редактирует существующий опрос
 func EditSurveyHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPut {

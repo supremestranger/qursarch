@@ -17,6 +17,33 @@ async function checkAuth() {
     }
 }
 
+/**
+ * Функция для перехода на страницу создания опроса.
+ */
+function createSurvey() {
+    window.location.href = 'create_survey.html';
+}
+
+/**
+ * Функция для перехода на страницу просмотра опросов.
+ */
+function viewSurveys() {
+    window.location.href = 'view_surveys.html';
+}
+
+/**
+ * Функция для перехода на страницу аналитики опроса.
+ */
+function viewAnalytics() {
+    const surveyID = prompt("Введите ID опроса для аналитики:");
+    if (surveyID === null || surveyID.trim() === "") {
+        showError('Пожалуйста, введите ID опроса.');
+        return;
+    }
+    window.location.href = `analytics.html?id=${encodeURIComponent(surveyID.trim())}`;
+}
+
+
 // Обработка формы входа
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
@@ -64,6 +91,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const takeSurveyForm = document.getElementById('take-survey-form');
+    if (takeSurveyForm) {
+        takeSurveyForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const surveyID = document.getElementById('survey-id').value.trim();
+            if (surveyID === "") {
+                showError("Пожалуйста, введите ID опроса.");
+                return;
+            }
+            // Переход к странице прохождения опроса с переданным ID
+            window.location.href = `take_survey.html?id=${encodeURIComponent(surveyID)}`;
+        });
+    }
+
     // Обработчик выхода
     const logoutButton = document.getElementById('logout-button');
     if (logoutButton) {
@@ -84,28 +125,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Навигационные функции
 
-/**
- * Функция для перехода на страницу создания опроса.
- */
-function createSurvey() {
-    window.location.href = 'create_survey.html';
-}
-
-/**
- * Функция для перехода на страницу просмотра опросов.
- */
-function viewSurveys() {
-    window.location.href = 'view_surveys.html';
-}
-
-/**
- * Функция для перехода на страницу аналитики опроса.
- */
-function viewAnalytics() {
-    const surveyID = prompt("Введите ID опроса для аналитики:");
-    if (surveyID === null || surveyID.trim() === "") {
-        showError('Пожалуйста, введите ID опроса.');
-        return;
-    }
-    window.location.href = `analytics.html?id=${encodeURIComponent(surveyID.trim())}`;
-}

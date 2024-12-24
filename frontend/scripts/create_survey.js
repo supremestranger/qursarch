@@ -2,9 +2,8 @@
 
 let questionCount = 0;
 
-/**
- * Добавляет новый вопрос в форму создания опроса.
- */
+
+//Добавляет новый вопрос в форму создания опроса.
 function addQuestion(question = null) {
     questionCount++;
     const container = document.getElementById('questions-container');
@@ -187,5 +186,4 @@ document.addEventListener('DOMContentLoaded', function() {
     if (createSurveyForm) {
         createSurveyForm.addEventListener('submit', submitCreateSurvey);
     }
-}
-);
+});

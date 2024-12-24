@@ -26,12 +26,15 @@ func main() {
 
 	// Обработчик для создания опроса (POST /api/surveys)
 	surveyMux.HandleFunc("/api/surveys", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			handlers.CreateSurveyHandler(w, r)
-			return
-		}
-		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
-	})
+        switch r.Method {
+        case http.MethodPost:
+            handlers.CreateSurveyHandler(w, r)
+        case http.MethodGet:
+            handlers.ListSurveysHandler(w, r)
+        default:
+            http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+        }
+    })
 
 	// Обработчик для всех маршрутов, начинающихся с /api/surveys/
 	surveyMux.HandleFunc("/api/surveys/", func(w http.ResponseWriter, r *http.Request) {

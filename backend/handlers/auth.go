@@ -116,7 +116,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     // Создание JWT-токена
-    expirationTime := time.Now().Add(24 * time.Hour) // Токен действует 24 часа
+    expirationTime := time.Now().Add(10*time.Second) // Токен действует 24 часа
     claims := &Claims{
         AdminID: admin.AdminID,
         StandardClaims: jwt.StandardClaims{
@@ -162,7 +162,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
         Value:    "",
         Expires:  time.Unix(0, 0),
         HttpOnly: true,
-        Secure:   false, // Установите true при использовании HTTPS
+        Secure:   false, // RIP https :(
         SameSite: http.SameSiteStrictMode,
         Path:     "/",
     })
@@ -173,7 +173,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     })
 }
 
-// CheckAuthHandler проверяет аутентификацию администратора
+// проверяет аутентификацию админа
 func CheckAuthHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodGet {
         http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)

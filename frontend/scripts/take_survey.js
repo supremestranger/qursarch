@@ -1,7 +1,5 @@
 // scripts/take_survey.js
 
-let survey = {};
-
 /**
  * Загружает опрос по переданному ID и отображает его.
  */
@@ -15,9 +13,8 @@ async function loadSurvey() {
     }
 
     try {
-        const fetchedSurvey = await httpRequest('GET', `/api/surveys/${surveyID}`, null);
-        survey = fetchedSurvey;
-        displaySurvey(fetchedSurvey);
+        const survey = await httpRequest('GET', `/api/surveys/${surveyID}`, null);
+        displaySurvey(survey);
     } catch (err) {
         showError(`Ошибка при загрузке опроса: ${err.message}`);
     }
@@ -28,73 +25,67 @@ async function loadSurvey() {
  * @param {Object} survey - Объект опроса.
  */
 function displaySurvey(survey) {
-    document.getElementById('survey-title').innerText = survey.title;
+    const surveyContainer = document.getElementById('survey-container');
+    if (!surveyContainer) return;
 
-    const surveyForm = document.getElementById('survey-form');
+    let htmlContent = `
+        <h2>${sanitizeHTML(survey.title)}</h2>
+        <p>${sanitizeHTML(survey.description || 'Без описания')}</p>
+        <form id="submit-survey-form">
+    `;
 
-    survey.questions.forEach((question, index) => {
-        const questionDiv = document.createElement('div');
-        questionDiv.className = 'question';
-        questionDiv.id = `question-${index + 1}`;
-
-        const questionLabel = document.createElement('label');
-        questionLabel.innerText = `${index + 1}. ${question.question_text}`;
-        questionLabel.htmlFor = `question-input-${index + 1}`;
-        questionDiv.appendChild(questionLabel);
+    survey.Questions.forEach((question, index) => {
+        htmlContent += `
+            <div class="question">
+                <h3>${index + 1}. ${sanitizeHTML(question.question_text)}</h3>
+        `;
 
         if (question.question_type === 'single_choice') {
-            question.options.forEach((option, optIndex) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-
-                const optionInput = document.createElement('input');
-                optionInput.type = 'radio';
-                optionInput.id = `question-${index + 1}-option-${optIndex + 1}`;
-                optionInput.name = `question-${index + 1}`;
-                optionInput.value = option.option_id; // Используется OptionID
-
-                const optionLabel = document.createElement('label');
-                optionLabel.htmlFor = `question-${index + 1}-option-${optIndex + 1}`;
-                optionLabel.innerText = option.option_text;
-
-                optionDiv.appendChild(optionInput);
-                optionDiv.appendChild(optionLabel);
-                questionDiv.appendChild(optionDiv);
+            question.Options.forEach(option => {
+                htmlContent += `
+                    <div class="option">
+                        <input type="radio" id="option_${question.question_id}_${option.option_id}" name="question_${question.question_id}" value="${sanitizeHTML(option.option_id)}" required>
+                        <label for="option_${question.question_id}_${option.option_id}">${sanitizeHTML(option.option_text)}</label>
+                    </div>
+                `;
             });
         } else if (question.question_type === 'multiple_choice') {
-            question.options.forEach((option, optIndex) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-
-                const optionInput = document.createElement('input');
-                optionInput.type = 'checkbox';
-                optionInput.id = `question-${index + 1}-option-${optIndex + 1}`;
-                optionInput.name = `question-${index + 1}`;
-                optionInput.value = option.option_id; // Используется OptionID
-
-                const optionLabel = document.createElement('label');
-                optionLabel.htmlFor = `question-${index + 1}-option-${optIndex + 1}`;
-                optionLabel.innerText = option.option_text;
-
-                optionDiv.appendChild(optionInput);
-                optionDiv.appendChild(optionLabel);
-                questionDiv.appendChild(optionDiv);
+            question.Options.forEach(option => {
+                htmlContent += `
+                    <div class="option">
+                        <input type="checkbox" id="option_${question.question_id}_${option.option_id}" name="question_${question.question_id}" value="${sanitizeHTML(option.option_id)}">
+                        <label for="option_${question.question_id}_${option.option_id}">${sanitizeHTML(option.option_text)}</label>
+                    </div>
+                `;
             });
         } else if (question.question_type === 'free_text') {
-            const textarea = document.createElement('textarea');
-            textarea.id = `question-${index + 1}-input`;
-            textarea.name = `question-${index + 1}`;
-            textarea.required = true;
-            questionDiv.appendChild(textarea);
+            htmlContent += `
+                <textarea id="question_${question.question_id}" name="question_${question.question_id}" required></textarea>
+            `;
         }
 
-        // Вставка вопроса перед кнопкой отправки
-        surveyForm.insertBefore(questionDiv, surveyForm.lastElementChild);
+        htmlContent += `
+            </div>
+        `;
     });
+
+    htmlContent += `
+            <button type="submit">Отправить Ответы</button>
+        </form>
+    `;
+
+    surveyContainer.innerHTML = htmlContent;
+
+    // Добавление обработчика отправки формы
+    const submitSurveyForm = document.getElementById('submit-survey-form');
+    if (submitSurveyForm) {
+        submitSurveyForm.addEventListener('submit', submitSurvey);
+    }
 }
 
 /**
- * Обрабатывает отправку формы опроса.
+ * Обрабатывает отправку опроса и сохраняет результаты на сервере.
+ * @param {Event} event - Событие отправки формы.
  */
 async function submitSurvey(event) {
     event.preventDefault();
@@ -107,60 +98,88 @@ async function submitSurvey(event) {
         return;
     }
 
-    const formData = new FormData(event.target);
-    const answers = [];
-
     // Сбор ответов
-    survey.questions.forEach((question, index) => {
-        const key = `question-${index + 1}`;
-        if (question.question_type === 'free_text') {
-            const answerText = formData.get(key).trim();
-            if (answerText === "") {
-                showError(`Пожалуйста, ответьте на вопрос ${index + 1}.`);
-                throw new Error(`Пустой ответ на вопрос ${index + 1}.`);
+    const surveyData = {
+        survey_id: parseInt(surveyID),
+        answers: []
+    };
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    // Получение уникальных QuestionIDs
+    const questionIDs = new Set();
+    for (let key of formData.keys()) {
+        const match = key.match(/^question_(\d+)$/);
+        if (match) {
+            questionIDs.add(match[1]);
+        }
+    }
+
+    // Сбор ответов по каждому вопросу
+    questionIDs.forEach(qID => {
+        const questionType = getQuestionType(qID);
+        if (questionType === 'single_choice') {
+            const selectedOption = formData.get(`question_${qID}`);
+            if (selectedOption) {
+                surveyData.answers.push({
+                    question_id: parseInt(qID),
+                    answer_text: "",
+                    selected_options: selectedOption.toString()
+                });
             }
-            answers.push({
-                question_id: question.question_id,
-                answer_text: answerText,
-                selected_options: []
-            });
-        } else if (question.question_type === 'single_choice') {
-            const selectedOption = formData.get(key);
-            if (!selectedOption) {
-                showError(`Пожалуйста, выберите вариант ответа для вопроса ${index + 1}.`);
-                throw new Error(`Не выбран вариант ответа для вопроса ${index + 1}.`);
-            }
-            answers.push({
-                question_id: question.question_id,
+        } else if (questionType === 'multiple_choice') {
+            const selectedOptions = formData.getAll(`question_${qID}`);
+            surveyData.answers.push({
+                question_id: parseInt(qID),
                 answer_text: "",
-                selected_options: [parseInt(selectedOption, 10)]
+                selected_options: selectedOptions.join(",")
             });
-        } else if (question.question_type === 'multiple_choice') {
-            const selectedOptions = formData.getAll(key).map(v => parseInt(v, 10));
-            if (selectedOptions.length === 0) {
-                showError(`Пожалуйста, выберите хотя бы один вариант ответа для вопроса ${index + 1}.`);
-                throw new Error(`Не выбраны варианты ответов для вопроса ${index + 1}.`);
+        } else if (questionType === 'free_text') {
+            const answerText = formData.get(`question_${qID}`);
+            if (answerText) {
+                surveyData.answers.push({
+                    question_id: parseInt(qID),
+                    answer_text: answerText.toString(),
+                    selected_options: ""
+                });
             }
-            answers.push({
-                question_id: question.question_id,
-                answer_text: "",
-                selected_options: selectedOptions
-            });
         }
     });
 
-    const surveyResult = {
-        survey_id: parseInt(surveyID, 10),
-        answers: answers
-    };
-
+    // Отправка данных на сервер
     try {
-        const res = await httpRequest('POST', `/api/surveys/${surveyID}/submit`, surveyResult);
-        showSuccess('Спасибо за прохождение опроса!');
+        const res = await httpRequest('POST', `/api/surveys/${surveyID}/submit`, surveyData);
+        showSuccess(res.message);
         window.location.href = 'index.html';
     } catch (err) {
-        showError(`Ошибка при отправке ответов: ${err.message}`);
+        showError(`Ошибка при отправке опроса: ${err.message}`);
     }
+}
+
+/**
+ * Определяет тип вопроса по его ID.
+ * @param {string} questionID - ID вопроса.
+ * @returns {string} - Тип вопроса.
+ */
+function getQuestionType(questionID) {
+    // Здесь необходимо реализовать логику для определения типа вопроса.
+    // Например, можно хранить типы вопросов в data-атрибутах или получить их с сервера.
+    // В данном примере предположим, что типы вопросов известны заранее.
+    // Для полноценной реализации рекомендуется получать информацию о типах вопросов с сервера.
+    return 'single_choice'; // Замените на реальную логику
+}
+
+/**
+ * Функция для безопасного вывода HTML-содержимого, предотвращающая XSS атаки.
+ * @param {string} str - Входная строка.
+ * @returns {string} - Очищенная строка.
+ */
+
+function sanitizeHTML(str) {
+    const temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
 }
 
 // Обработка выхода
@@ -180,16 +199,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Загрузка опроса при загрузке страницы
     loadSurvey();
-
-    // Обработка отправки формы опроса
-    const surveyForm = document.getElementById('survey-form');
-    if (surveyForm) {
-        surveyForm.addEventListener('submit', submitSurvey);
-    }
-
-    // Проверка аутентификации для отображения кнопки выхода
-    const token = localStorage.getItem('authToken');
-    if (token) {
-        document.getElementById('logout-button').style.display = 'inline-block';
-    }
 });
