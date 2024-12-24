@@ -26,15 +26,15 @@ func main() {
 
 	// Обработчик для создания опроса (POST /api/surveys)
 	surveyMux.HandleFunc("/api/surveys", func(w http.ResponseWriter, r *http.Request) {
-        switch r.Method {
-        case http.MethodPost:
-            handlers.CreateSurveyHandler(w, r)
-        case http.MethodGet:
-            handlers.ListSurveysHandler(w, r)
-        default:
-            http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
-        }
-    })
+		switch r.Method {
+		case http.MethodPost:
+			handlers.CreateSurveyHandler(w, r)
+		case http.MethodGet:
+			handlers.ListSurveysHandler(w, r)
+		default:
+			http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		}
+	})
 
 	// Обработчик для всех маршрутов, начинающихся с /api/surveys/
 	surveyMux.HandleFunc("/api/surveys/", func(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +93,8 @@ func main() {
 	// Регистрация защищённых маршрутов
 	http.Handle("/api/surveys", protectedSurveyHandler)  // Для точного соответствия /api/surveys
 	http.Handle("/api/surveys/", protectedSurveyHandler) // Для всех маршрутов, начинающихся с /api/surveys/
-
+	http.HandleFunc("/api/public_surveys/", handlers.GetSurveyHandler)
+	http.HandleFunc("/api/public_surveys_submit/", handlers.SubmitSurveyHandler)
 	// Запуск сервера
 	log.Println("Сервер запущен на :8081")
 	log.Fatal(http.ListenAndServe(":8081", nil))

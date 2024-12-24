@@ -13,7 +13,7 @@ async function loadSurvey() {
     }
 
     try {
-        const survey = await httpRequest('GET', `/api/surveys/${surveyID}`, null);
+        const survey = await httpRequest('GET', `/api/public_surveys/${surveyID}`, null);
         displaySurvey(survey);
     } catch (err) {
         showError(`Ошибка при загрузке опроса: ${err.message}`);
@@ -34,14 +34,14 @@ function displaySurvey(survey) {
         <form id="submit-survey-form">
     `;
 
-    survey.Questions.forEach((question, index) => {
+    survey.questions.forEach((question, index) => {
         htmlContent += `
             <div class="question">
                 <h3>${index + 1}. ${sanitizeHTML(question.question_text)}</h3>
         `;
 
         if (question.question_type === 'single_choice') {
-            question.Options.forEach(option => {
+            question.options.forEach(option => {
                 htmlContent += `
                     <div class="option">
                         <input type="radio" id="option_${question.question_id}_${option.option_id}" name="question_${question.question_id}" value="${sanitizeHTML(option.option_id)}" required>
@@ -50,7 +50,7 @@ function displaySurvey(survey) {
                 `;
             });
         } else if (question.question_type === 'multiple_choice') {
-            question.Options.forEach(option => {
+            question.options.forEach(option => {
                 htmlContent += `
                     <div class="option">
                         <input type="checkbox" id="option_${question.question_id}_${option.option_id}" name="question_${question.question_id}" value="${sanitizeHTML(option.option_id)}">
@@ -100,8 +100,8 @@ async function submitSurvey(event) {
 
     // Сбор ответов
     const surveyData = {
-        survey_id: parseInt(surveyID),
-        answers: []
+        answers: [],
+        user_id: Math.ceil(Math.random() * 999)
     };
 
     const form = event.target;
@@ -120,20 +120,29 @@ async function submitSurvey(event) {
     questionIDs.forEach(qID => {
         const questionType = getQuestionType(qID);
         if (questionType === 'single_choice') {
-            const selectedOption = formData.get(`question_${qID}`);
-            if (selectedOption) {
+            const selectedOptions = formData.getAll(`question_${qID}`);
+            selectedOptions2 = {}
+            selectedOptions.forEach(element => {
+                console.log(element);
+                selectedOptions["option_text"] = element
+            });
+            if (selectedOptions) {
                 surveyData.answers.push({
                     question_id: parseInt(qID),
                     answer_text: "",
-                    selected_options: selectedOption.toString()
+                    selected_options: selectedOptions2
                 });
             }
         } else if (questionType === 'multiple_choice') {
             const selectedOptions = formData.getAll(`question_${qID}`);
+            selectedOptions2 = {}
+            selectedOptions.forEach(element => {
+                selectedOptions["option_text"] = element
+            });
             surveyData.answers.push({
                 question_id: parseInt(qID),
                 answer_text: "",
-                selected_options: selectedOptions.join(",")
+                selected_options: selectedOptions2
             });
         } else if (questionType === 'free_text') {
             const answerText = formData.get(`question_${qID}`);
@@ -149,7 +158,8 @@ async function submitSurvey(event) {
 
     // Отправка данных на сервер
     try {
-        const res = await httpRequest('POST', `/api/surveys/${surveyID}/submit`, surveyData);
+        console.log(surveyData)
+        const res = await httpRequest('POST', `/api/public_surveys/${surveyID}/submit`, surveyData);
         showSuccess(res.message);
         window.location.href = 'index.html';
     } catch (err) {
