@@ -1,0 +1,33 @@
+<!-- static/take_survey.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Прохождение Опроса</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Прохождение Опроса</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+            <button id="logout-button" style="display: none;">Выйти</button>
+        </nav>
+    </header>
+    <main>
+        <div id="survey-container">
+            <h2 id="survey-title">Загрузка...</h2>
+            <form id="survey-form">
+                <!-- Вопросы будут добавлены динамически -->
+                <button type="submit">Отправить Ответы</button>
+            </form>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Платформа Опросов</p>
+    </footer>
+
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/take_survey.js"></script>
+</body>
+</html>
