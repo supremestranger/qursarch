@@ -30,6 +30,11 @@ func main() {
 			handlers.CreateSurveyHandler(w, r)
 			return
 		}
+
+		if r.Method == http.MethodGet {
+			handlers.GetSurveysHandler(w, r)
+			return
+		}
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 	})
 

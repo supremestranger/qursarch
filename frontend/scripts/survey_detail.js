@@ -17,23 +17,24 @@ async function loadSurveyDetails() {
         const detailsContainer = document.getElementById('survey-details');
 
         let htmlContent = `
-            <h2>${survey.Title}</h2>
-            <p>${survey.Description || 'Без описания'}</p>
-            <p>Создан: ${new Date(survey.CreatedAt).toLocaleString()}</p>
+            <h2>${survey.title}</h2>
+            <p>${survey.description || 'Без описания'}</p>
+            <p>Создан: ${new Date(survey.created_at).toLocaleString()}</p>
             <h3>Вопросы</h3>
             <ul>
         `;
 
-        survey.Questions.forEach(q => {
-            htmlContent += `<li>${q.QuestionText} (${q.QuestionType})</li>`;
+        console.log(survey)
+        survey.questions.forEach(q => {
+            htmlContent += `<li>${q.question_text} (${q.question_type})</li>`;
         });
 
         htmlContent += `</ul>`;
 
         // Кнопки для редактирования и аналитики
         htmlContent += `
-            <button onclick="editSurvey(${survey.SurveyID})">Редактировать Опрос</button>
-            <button onclick="viewAnalytics(${survey.SurveyID})">Посмотреть Аналитику</button>
+            <button onclick="editSurvey(${survey.survey_id})">Редактировать Опрос</button>
+            <button onclick="viewAnalytics(${survey.survey_id})">Посмотреть Аналитику</button>
         `;
 
         detailsContainer.innerHTML = htmlContent;

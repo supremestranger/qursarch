@@ -16,10 +16,10 @@ async function loadSurvey() {
 
     try {
         const survey = await httpRequest('GET', `/api/surveys/${surveyID}`, null);
-        document.getElementById('title').value = survey.Title;
-        document.getElementById('description').value = survey.Description || '';
+        document.getElementById('title').value = survey.title;
+        document.getElementById('description').value = survey.description || '';
 
-        survey.Questions.forEach(question => {
+        survey.questions.forEach(question => {
             addQuestion(question);
         });
     } catch (err) {
@@ -38,28 +38,29 @@ function addQuestion(question = null) {
     const questionDiv = document.createElement('div');
     questionDiv.className = 'question';
     questionDiv.id = `question-${questionCount}`;
+    console.log(question)
 
     questionDiv.innerHTML = `
         <h4>Вопрос ${questionCount}</h4>
         <label for="question_text_${questionCount}">Текст Вопроса:</label>
-        <textarea id="question_text_${questionCount}" name="question_text" required>${question ? question.QuestionText : ''}</textarea>
+        <textarea id="question_text_${questionCount}" name="question_text" required>${question ? question.question_text : ''}</textarea>
 
         <label for="question_type_${questionCount}">Тип Вопроса:</label>
         <select id="question_type_${questionCount}" name="question_type" onchange="toggleOptions(${questionCount})" required>
             <option value="">--Выберите Тип--</option>
-            <option value="single_choice" ${question && question.QuestionType === 'single_choice' ? 'selected' : ''}>Один вариант ответа</option>
-            <option value="multiple_choice" ${question && question.QuestionType === 'multiple_choice' ? 'selected' : ''}>Несколько вариантов ответа</option>
-            <option value="free_text" ${question && question.QuestionType === 'free_text' ? 'selected' : ''}>Свободная форма</option>
+            <option value="single_choice" ${question && question.question_type === 'single_choice' ? 'selected' : ''}>Один вариант ответа</option>
+            <option value="multiple_choice" ${question && question.question_type === 'multiple_choice' ? 'selected' : ''}>Несколько вариантов ответа</option>
+            <option value="free_text" ${question && question.question_type === 'free_text' ? 'selected' : ''}>Свободная форма</option>
         </select>
 
-        <div id="options_container_${questionCount}" style="display:${question && (question.QuestionType === 'single_choice' || question.QuestionType === 'multiple_choice') ? 'block' : 'none'};">
+        <div id="options_container_${questionCount}" style="display:${question && (question.question_type === 'single_choice' || question.question_type === 'multiple_choice') ? 'block' : 'none'};">
             <h5>Варианты Ответов</h5>
             <div id="options_list_${questionCount}">
-                ${question && (question.QuestionType === 'single_choice' || question.QuestionType === 'multiple_choice') ? 
-                    question.Options.map((opt, idx) => `
+                ${question && (question.question_type === 'single_choice' || question.question_type === 'multiple_choice') ? 
+                    question.options.map((opt, idx) => `
                         <div class="option" id="question_${questionCount}_option_${idx + 1}">
                             <label for="question_${questionCount}_option_text_${idx + 1}">Вариант ${idx + 1}:</label>
-                            <input type="text" id="question_${questionCount}_option_text_${idx + 1}" name="question_${questionCount}_option_text" required value="${opt.OptionText}">
+                            <input type="text" id="question_${questionCount}_option_text_${idx + 1}" name="question_${questionCount}_option_text" required value="${opt.option_text}">
                             <button type="button" onclick="removeOption(${questionCount}, ${idx + 1})">Удалить Вариант</button>
                         </div>
                     `).join('') : ''}
@@ -158,20 +159,20 @@ async function submitEditSurvey(event) {
 
         if (questionText && questionType && questionText.value.trim() !== "" && questionType.value !== "") {
             const question = {
-                QuestionText: questionText.value.trim(),
-                QuestionType: questionType.value,
-                Options: []
+                question_text: questionText.value.trim(),
+                question_type: questionType.value,
+            options: []
             };
 
             if (questionType.value === "single_choice" || questionType.value === "multiple_choice") {
                 const optionsList = document.querySelectorAll(`#question-${i} .option input[name="question_${i}_option_text"]`);
                 optionsList.forEach(opt => {
                     if (opt.value.trim() !== "") {
-                        question.Options.push({ OptionText: opt.value.trim() });
+                        question.options.push({ option_text: opt.value.trim() });
                     }
                 });
 
-                if (question.Options.length === 0) {
+                if (question.options.length === 0) {
                     showError(`Пожалуйста, добавьте хотя бы один вариант ответа для вопроса ${i}.`);
                     return;
                 }
