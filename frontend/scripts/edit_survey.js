@@ -19,7 +19,7 @@ async function loadSurvey() {
         document.getElementById('title').value = survey.title;
         document.getElementById('description').value = survey.description || '';
 
-        survey.Questions.forEach(question => {
+        survey.questions.forEach(question => {
             addQuestion(question);
         });
     } catch (err) {
@@ -38,6 +38,7 @@ function addQuestion(question = null) {
     const questionDiv = document.createElement('div');
     questionDiv.className = 'question';
     questionDiv.id = `question-${questionCount}`;
+    console.log(question)
 
     questionDiv.innerHTML = `
         <h4>Вопрос ${questionCount}</h4>
