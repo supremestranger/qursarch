@@ -61,11 +61,12 @@ func SubmitSurveyHandler(w http.ResponseWriter, r *http.Request) {
 		"INSERT INTO SurveyResults (SurveyID, UserID) VALUES ($1, $2) RETURNING ResultID",
 		surveyID, submission.UserID).Scan(&resultID)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Ошибка при сохранении результата опроса", http.StatusInternalServerError)
 		return
 	}
 
-	for qID, answer := range submission.Answers {
+	for _, answer := range submission.Answers {
 		if err != nil {
 			http.Error(w, "Неверный формат question_id", http.StatusBadRequest)
 			return
@@ -82,15 +83,16 @@ func SubmitSurveyHandler(w http.ResponseWriter, r *http.Request) {
 			// Преобразование выбранных опций в строку, разделённую запятой
 			options := make([]string, len(answer.SelectedOptions))
 			for i, opt := range answer.SelectedOptions {
-				options[i] = opt.OptionText
+				options[i] = opt
 			}
 			selectedOptions = sql.NullString{String: strings.Join(options, ","), Valid: true}
 		}
 
 		_, err = tx.Exec(
 			"INSERT INTO Answers (ResultID, QuestionID, AnswerText, SelectedOptions) VALUES ($1, $2, $3, $4)",
-			resultID, qID, answerText, selectedOptions)
+			resultID, answer.QuestionId, answerText, selectedOptions)
 		if err != nil {
+			log.Println(err)
 			http.Error(w, "Ошибка при сохранении ответа", http.StatusInternalServerError)
 			return
 		}
@@ -110,9 +112,9 @@ func SubmitSurveyHandler(w http.ResponseWriter, r *http.Request) {
 
 // AnswerInput представляет структуру ответа, полученного от пользователя
 type AnswerInput struct {
-	QuestionId      int           `json:"question_id"`
-	AnswerText      string        `json:"answer_text,omitempty"`
-	SelectedOptions []OptionInput `json:"selected_options,omitempty"`
+	QuestionId      int      `json:"question_id"`
+	AnswerText      string   `json:"answer_text,omitempty"`
+	SelectedOptions []string `json:"selected_options,omitempty"`
 }
 
 // OptionInput представляет структуру выбранного варианта ответа

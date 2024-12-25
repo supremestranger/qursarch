@@ -121,28 +121,25 @@ async function submitSurvey(event) {
         const questionType = getQuestionType(qID);
         if (questionType === 'single_choice') {
             const selectedOptions = formData.getAll(`question_${qID}`);
-            selectedOptions2 = {}
-            selectedOptions.forEach(element => {
-                console.log(element);
-                selectedOptions["option_text"] = element
-            });
+            console.log(selectedOptions);
+            let selectedOptions2 = [];
+            let i = 0;
             if (selectedOptions) {
                 surveyData.answers.push({
                     question_id: parseInt(qID),
                     answer_text: "",
-                    selected_options: selectedOptions2
+                    selected_options: selectedOptions
                 });
             }
         } else if (questionType === 'multiple_choice') {
             const selectedOptions = formData.getAll(`question_${qID}`);
-            selectedOptions2 = {}
             selectedOptions.forEach(element => {
                 selectedOptions["option_text"] = element
             });
             surveyData.answers.push({
                 question_id: parseInt(qID),
                 answer_text: "",
-                selected_options: selectedOptions2
+                selected_options: selectedOptions
             });
         } else if (questionType === 'free_text') {
             const answerText = formData.get(`question_${qID}`);

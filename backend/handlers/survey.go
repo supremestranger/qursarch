@@ -9,6 +9,9 @@ import (
 	"strings"
 	"survey-platform-server/db"
 	"survey-platform-server/models"
+	"time"
+
+	"github.com/golang-jwt/jwt"
 )
 
 func GetSurveysHandler(w http.ResponseWriter, r *http.Request) {
@@ -140,6 +143,61 @@ func ListSurveysHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		surveys = append(surveys, survey)
 	}
+
+	c, err := r.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			http.Error(w, "Неавторизованный доступ: нет токена", http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Ошибка при получении куки", http.StatusBadRequest)
+		return
+	}
+
+	tokenStr := c.Value
+	claims := &Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+		return JwtKey, nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			http.Error(w, "Неверная подпись токена", http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Невалидный токен", http.StatusBadRequest)
+		return
+	}
+	if !token.Valid {
+		http.Error(w, "Невалидный токен", http.StatusUnauthorized)
+		return
+	}
+
+	expirationTime := time.Now().Add(10 * time.Second) // Токен действует 24 часа
+	claims = &Claims{
+		AdminID: claims.AdminID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(JwtKey)
+	if err != nil {
+		http.Error(w, "Ошибка при создании токена", http.StatusInternalServerError)
+		return
+	}
+
+	// Установка куки
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		Expires:  expirationTime,
+		HttpOnly: true,
+		Secure:   false, // Установите true при использовании HTTPS
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+	})
 
 	// Отправка ответа в формате JSON
 	w.Header().Set("Content-Type", "application/json")

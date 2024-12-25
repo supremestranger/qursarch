@@ -28,6 +28,7 @@ async function loadSurveys() {
                     <p>${sanitizeHTML(survey.description || 'Без описания')}</p>
                     <p>Создан: ${new Date(survey.created_at).toLocaleString()}</p>
                     <button onclick="viewSurvey(${survey.survey_id})">Просмотреть</button>
+                    <button onclick="delSurvey(${survey.survey_id})">Удалить</button>
                 `;
 
                 surveysContainer.appendChild(surveyDiv);
@@ -46,6 +47,16 @@ async function loadSurveys() {
  */
 function viewSurvey(surveyID) {
     window.location.href = `survey_detail.html?id=${encodeURIComponent(surveyID)}`;
+}
+
+async function delSurvey(surveyID) {
+    try {
+        const res = await httpRequest('POST', `/api/surveys_delete/${surveyID}`, null);
+        showSuccess(res.message);
+        window.location.href = 'index.html';
+    } catch (err) {
+        showError(`Ошибка при выходе: ${err.message}`);
+    }
 }
 
 /**

@@ -89,12 +89,36 @@ func main() {
 
 	// Применение AuthMiddleware к маршрутам опросов
 	protectedSurveyHandler := handlers.AuthMiddleware(surveyMux)
+	deleteSurveyHandler := handlers.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// todo delete survey
+		path := strings.TrimPrefix(r.URL.Path, "/api/surveys_delete/")
+		if path == "" {
+			http.Error(w, "Не указан ID опроса", http.StatusBadRequest)
+			return
+		}
+
+		// Разделение пути на части
+		parts := strings.SplitN(path, "/", 2)
+		surveyIDStr := parts[0]
+		surveyID, err := strconv.Atoi(surveyIDStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		res, err := db.DB.Exec("DELETE FROM surveys WHERE surveys.SurveyID = ($1)", surveyID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		_, _ = res.RowsAffected()
+	}))
 
 	// Регистрация защищённых маршрутов
 	http.Handle("/api/surveys", protectedSurveyHandler)  // Для точного соответствия /api/surveys
 	http.Handle("/api/surveys/", protectedSurveyHandler) // Для всех маршрутов, начинающихся с /api/surveys/
 	http.HandleFunc("/api/public_surveys/", handlers.GetSurveyHandler)
 	http.HandleFunc("/api/public_surveys_submit/", handlers.SubmitSurveyHandler)
+	http.Handle("/api/surveys_delete/", deleteSurveyHandler)
 	// Запуск сервера
 	log.Println("Сервер запущен на :8081")
 	log.Fatal(http.ListenAndServe(":8081", nil))
